@@ -1,0 +1,57 @@
+{
+  "name": "ifsi-platform-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Plateforme e-learning IFSI - Backend Node.js (API, FSRS, ECOS, conformité HDS)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "lint": "eslint . --ext .js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "seed:ue": "node src/services/ueSeed.js",
+    "seed:fsrs": "node src/services/fsrs/fsrsSeed.js",
+    "seed:ecos": "node src/services/ecos/ecosSeed.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "dotenv": "^16.4.5",
+
+    "mongoose": "^8.6.3",
+    "ioredis": "^5.4.1",
+
+    "ts-fsrs": "^5.2.1",
+
+    "socket.io": "^4.7.5",
+    "openai": "^4.63.0",
+
+    "jsonwebtoken": "^9.0.2",
+    "bcrypt": "^5.1.1",
+    "argon2": "^0.40.3",
+
+    "express-rate-limit": "^7.4.0",
+    "express-validator": "^7.2.0",
+    "zod": "^3.23.8",
+
+    "crypto-js": "^4.2.0",
+    "winston": "^3.14.2",
+    "node-cron": "^3.0.3",
+    "morgan": "^1.10.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "mongodb-memory-server": "^10.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

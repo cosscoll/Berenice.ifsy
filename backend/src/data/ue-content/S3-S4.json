@@ -1,0 +1,20 @@
+{
+  "semesters": [3, 4],
+  "title": "Processus pathologiques & Urgences",
+  "ues": [
+    { "id": "2.5", "titre": "Processus inflammatoires et infectieux" },
+    { "id": "2.6", "titre": "Processus psychopathologiques (SDRE / SDT)" },
+    { "id": "2.7", "titre": "Défaillances organiques et processus dégénératifs (Cardio, BPCO, Diabète)" },
+    { "id": "2.8", "titre": "Processus obstructifs, tumeurs" },
+    { "id": "2.11", "titre": "Pharmacologie et Thérapeutiques (AVK, Antalgiques)" },
+    { "id": "3.2", "titre": "Projet de soins infirmiers" },
+    { "id": "3.3", "titre": "Rôles infirmiers, organisation du travail et interprofessionnalité (Délégation)" },
+    { "id": "4.2", "titre": "Soins relationnels" },
+    { "id": "4.3", "titre": "Soins d'urgence (AFGSU, RCP, Choc)" },
+    { "id": "4.4", "titre": "Thérapeutiques et contribution au diagnostic médical (Prélèvements, Transfusion)" },
+    { "id": "4.5", "titre": "Soins infirmiers et gestion des risques" },
+    { "id": "4.6", "titre": "Soins éducatifs et préventifs (Éducation Thérapeutique du Patient)" },
+    { "id": "5.3", "titre": "Communication et conduite de projet" },
+    { "id": "5.4", "titre": "Soins infirmiers et gestion des risques (analyse de situation)" }
+  ]
+}

@@ -1,0 +1,417 @@
+[
+  {
+    "ecos_id": "UE4.3_S4_01",
+    "titre": "Dyspnée aiguë",
+    "comp": [
+      1,
+      4,
+      6
+    ],
+    "ctx": "Dyspnée aiguë, homme 55 ans, antécédent de BPCO.",
+    "patient": {
+      "nom": "Yilmaz",
+      "prompt": "Parle peu, phrases courtes. Peur. Allergie pénicilline. Si l'étudiant ne demande pas les allergies, ne pas les donner spontanément.",
+      "avatar_params": {
+        "mood": "fear",
+        "voice": "alloy",
+        "blend_shapes": [
+          "jawOpen_heavy_breathing"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "ABCDE",
+        "pts": 3
+      },
+      {
+        "id": "allergie",
+        "pts": 2
+      },
+      {
+        "id": "SpO2_avant_O2",
+        "pts": 2
+      },
+      {
+        "id": "position_demi_assise",
+        "pts": 1
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE2.7_S3_02",
+    "titre": "Douleur thoracique",
+    "comp": [
+      1,
+      4
+    ],
+    "ctx": "Douleur thoracique constrictive, femme 62 ans, diabétique.",
+    "patient": {
+      "nom": "Berthier",
+      "prompt": "Décrit une douleur \"comme un étau\", irradiant au bras gauche. Angoissée. Ne mentionne le diabète que si on la questionne sur ses antécédents.",
+      "avatar_params": {
+        "mood": "pain",
+        "voice": "shimmer",
+        "blend_shapes": [
+          "browFurrow",
+          "jawClench"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "ECG_reflexe",
+        "pts": 3
+      },
+      {
+        "id": "antecedents_diabete",
+        "pts": 2
+      },
+      {
+        "id": "appel_medecin_urgence",
+        "pts": 3
+      },
+      {
+        "id": "surveillance_constantes",
+        "pts": 2
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE2.7_S3_03",
+    "titre": "Hypoglycémie",
+    "comp": [
+      1,
+      4,
+      6
+    ],
+    "ctx": "Malaise chez un patient diabétique de type 1, sueurs et tremblements.",
+    "patient": {
+      "nom": "Dubreuil",
+      "prompt": "Confus, réponses lentes. Sueurs abondantes. Ne sait plus s'il a mangé ce matin.",
+      "avatar_params": {
+        "mood": "confused",
+        "voice": "echo",
+        "blend_shapes": [
+          "eyeSquint",
+          "browLower"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "glycemie_capillaire",
+        "pts": 3
+      },
+      {
+        "id": "resucrage_adapte",
+        "pts": 3
+      },
+      {
+        "id": "conscience_evaluee",
+        "pts": 2
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE4.3_S4_04",
+    "titre": "Choc anaphylactique",
+    "comp": [
+      1,
+      4,
+      6
+    ],
+    "ctx": "Urticaire généralisée et gêne respiratoire après injection d'antibiotique.",
+    "patient": {
+      "nom": "Kader",
+      "prompt": "Voix étouffée, angoissé, gratte ses avant-bras. Dit avoir reçu \"une piqûre\" il y a 5 minutes.",
+      "avatar_params": {
+        "mood": "distress",
+        "voice": "alloy",
+        "blend_shapes": [
+          "jawOpen_heavy_breathing",
+          "lipPress"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "arret_medicament_cause",
+        "pts": 3
+      },
+      {
+        "id": "adrenaline_IM_reflexe",
+        "pts": 3
+      },
+      {
+        "id": "alerte_equipe_medicale",
+        "pts": 2
+      },
+      {
+        "id": "position_allonge_jambes_surelevees",
+        "pts": 1
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE2.7_S3_05",
+    "titre": "Suspicion d'AVC (FAST)",
+    "comp": [
+      1,
+      4
+    ],
+    "ctx": "Femme 71 ans, faiblesse brutale du bras droit et trouble de la parole depuis 20 minutes.",
+    "patient": {
+      "nom": "Renard",
+      "prompt": "Parole ralentie et déformée (dysarthrie simulée). Bras droit ne se lève pas complètement quand on le demande.",
+      "avatar_params": {
+        "mood": "worried",
+        "voice": "shimmer",
+        "blend_shapes": [
+          "mouthAsymmetry"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "heure_debut_symptomes",
+        "pts": 3
+      },
+      {
+        "id": "test_FAST_complet",
+        "pts": 3
+      },
+      {
+        "id": "appel_15_urgence_absolue",
+        "pts": 3
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE4.6_S4_06",
+    "titre": "Découverte de diabète de type 2 (ETP)",
+    "comp": [
+      4,
+      6
+    ],
+    "ctx": "Consultation d'annonce et d'éducation thérapeutique initiale.",
+    "patient": {
+      "nom": "Moreau",
+      "prompt": "Inquiet, pose beaucoup de questions sur l'alimentation. Peu de connaissances médicales préalables.",
+      "avatar_params": {
+        "mood": "neutral_anxious",
+        "voice": "echo",
+        "blend_shapes": []
+      }
+    },
+    "eval": [
+      {
+        "id": "langage_adapte_non_jargon",
+        "pts": 2
+      },
+      {
+        "id": "verification_comprehension",
+        "pts": 3
+      },
+      {
+        "id": "objectifs_partages_fixes",
+        "pts": 2
+      }
+    ],
+    "model_tier": "complex"
+  },
+  {
+    "ecos_id": "UE2.6_S3_07",
+    "titre": "Crise d'angoisse aiguë",
+    "comp": [
+      4,
+      6
+    ],
+    "ctx": "Patient hospitalisé, crise d'angoisse avec sensation de mort imminente.",
+    "patient": {
+      "nom": "Aït-Hamou",
+      "prompt": "Respiration rapide, discours précipité, demande sans cesse si \"c'est grave\". Se calme progressivement si l'étudiant reste posé et rassurant.",
+      "avatar_params": {
+        "mood": "panic",
+        "voice": "alloy",
+        "blend_shapes": [
+          "jawOpen_heavy_breathing"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "communication_apaisante",
+        "pts": 3
+      },
+      {
+        "id": "elimination_cause_organique",
+        "pts": 2
+      },
+      {
+        "id": "non_banalisation_symptome",
+        "pts": 2
+      }
+    ],
+    "model_tier": "complex"
+  },
+  {
+    "ecos_id": "UE4.7_S6_08",
+    "titre": "Annonce en soins palliatifs",
+    "comp": [
+      4,
+      6
+    ],
+    "ctx": "Patient en phase palliative, famille présente, question directe sur le pronostic.",
+    "patient": {
+      "nom": "Lefebvre",
+      "prompt": "Fatigué mais lucide. Demande directement : \"Combien de temps il me reste ?\". Attend une réponse honnête mais pas brutale.",
+      "avatar_params": {
+        "mood": "somber",
+        "voice": "echo",
+        "blend_shapes": []
+      }
+    },
+    "eval": [
+      {
+        "id": "ecoute_active",
+        "pts": 3
+      },
+      {
+        "id": "non_esquive_question",
+        "pts": 2
+      },
+      {
+        "id": "orientation_vers_medecin_referent",
+        "pts": 2
+      },
+      {
+        "id": "respect_directives_anticipees",
+        "pts": 2
+      }
+    ],
+    "model_tier": "complex"
+  },
+  {
+    "ecos_id": "UE4.4_S4_09",
+    "titre": "Réaction transfusionnelle",
+    "comp": [
+      1,
+      4,
+      6
+    ],
+    "ctx": "Frissons et fièvre 10 minutes après le début d'une transfusion de culot globulaire.",
+    "patient": {
+      "nom": "Costa",
+      "prompt": "Frissonne, dit se sentir \"pas bien du tout\" depuis quelques minutes seulement.",
+      "avatar_params": {
+        "mood": "distress",
+        "voice": "shimmer",
+        "blend_shapes": [
+          "shiver"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "arret_immediat_transfusion",
+        "pts": 3
+      },
+      {
+        "id": "maintien_voie_veineuse_serum_sale",
+        "pts": 2
+      },
+      {
+        "id": "alerte_medecin_et_EFS",
+        "pts": 2
+      },
+      {
+        "id": "constantes_et_tracabilite_poche",
+        "pts": 2
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE2.4_S2_10",
+    "titre": "Chute de la personne âgée",
+    "comp": [
+      1,
+      4
+    ],
+    "ctx": "Chute au domicile, femme 84 ans, douleur à la hanche droite, ne peut plus se relever.",
+    "patient": {
+      "nom": "Petit",
+      "prompt": "Douleur vive à la mobilisation de la jambe droite, raccourcie et en rotation externe. Anxieuse à l'idée de \"finir à l'hôpital\".",
+      "avatar_params": {
+        "mood": "pain",
+        "voice": "shimmer",
+        "blend_shapes": [
+          "browFurrow"
+        ]
+      }
+    },
+    "eval": [
+      {
+        "id": "non_mobilisation_intempestive",
+        "pts": 3
+      },
+      {
+        "id": "evaluation_douleur_EVA",
+        "pts": 2
+      },
+      {
+        "id": "recherche_signes_fracture",
+        "pts": 2
+      },
+      {
+        "id": "orientation_imagerie",
+        "pts": 2
+      }
+    ],
+    "model_tier": "standard"
+  },
+  {
+    "ecos_id": "UE2.10_S2_11",
+    "titre": "Suspicion de sepsis",
+    "comp": [
+      1,
+      4,
+      6
+    ],
+    "ctx": "Fièvre à 39,5°C, confusion débutante et tachycardie chez un patient post-opératoire J3.",
+    "patient": {
+      "nom": "Nguyen",
+      "prompt": "Un peu confus dans les réponses, dit avoir \"très chaud puis très froid\". Site opératoire sensible à la palpation.",
+      "avatar_params": {
+        "mood": "confused",
+        "voice": "echo",
+        "blend_shapes": []
+      }
+    },
+    "eval": [
+      {
+        "id": "reconnaissance_signes_sepsis_qSOFA",
+        "pts": 3
+      },
+      {
+        "id": "hemocultures_avant_antibio",
+        "pts": 2
+      },
+      {
+        "id": "alerte_medicale_rapide",
+        "pts": 3
+      },
+      {
+        "id": "surveillance_rapprochee_constantes",
+        "pts": 2
+      }
+    ],
+    "model_tier": "standard"
+  }
+]
