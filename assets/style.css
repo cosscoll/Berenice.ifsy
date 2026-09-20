@@ -1,0 +1,129 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #0b0d10;
+  color: #e8e8e8;
+}
+a { color: #8cf; }
+
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px;
+  border-right: 1px solid #222;
+  padding: 16px;
+  flex-shrink: 0;
+}
+.sidebar .brand { font-weight: 700; margin-bottom: 16px; }
+.sidebar nav a {
+  display: block;
+  padding: 8px 0;
+  color: #9aa;
+  text-decoration: none;
+}
+.sidebar nav a.active, .sidebar nav a:hover { color: #fff; }
+
+.topbar {
+  height: 56px;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+.topbar strong { margin-right: 8px; }
+.topbar .badge {
+  color: #777;
+  font-size: 13px;
+}
+
+main { flex: 1; padding: 24px; max-width: 900px; }
+
+h1 { margin-top: 0; }
+
+button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1a1d22;
+  color: #eee;
+  cursor: pointer;
+  font-size: 14px;
+}
+button:hover { background: #23262c; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+select, input[type="text"] {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #444;
+  background: #1a1d22;
+  color: #eee;
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  max-width: 520px;
+  background: #12151a;
+}
+
+.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #1e2a1e;
+  color: #8f8;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.ue-bloc { margin-bottom: 24px; }
+.ue-bloc h2 { font-size: 16px; color: #8cf; border-bottom: 1px solid #222; padding-bottom: 6px; }
+.ue-list { list-style: none; padding: 0; }
+.ue-list li { padding: 6px 0; border-bottom: 1px solid #1a1a1a; }
+.ue-code { color: #8cf; margin-right: 8px; }
+
+.scenario-list { list-style: none; padding: 0; }
+.scenario-list li {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.scenario-list li:hover { border-color: #555; }
+.scenario-list li.selected { border-color: #8cf; background: #101820; }
+
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.checklist input { margin-top: 4px; }
+
+.score-box {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #12151a;
+  border: 1px solid #333;
+}
+
+.muted { color: #888; font-size: 13px; }
+.warning { color: #e0a030; }
+.error { color: #e66; }
+
+.markmap { position: relative; margin-top: 12px; }
+.markmap > svg { width: 100%; height: 220px; background: #12151a; border-radius: 8px; }
+
+#anatomy-canvas-wrap {
+  width: 100%;
+  height: 420px;
+  background: #0f1115;
+  border-radius: 8px;
+  position: relative;
+}

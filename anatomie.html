@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anatomie 3D — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">IFSI Platform</div>
+      <nav>
+        <a href="index.html">Tableau de bord</a>
+        <a href="ue.html">Catalogue UE</a>
+        <a href="revision.html">Révision (FSRS)</a>
+        <a href="anatomie.html" class="active">Anatomie 3D</a>
+        <a href="ecos.html">Simulation ECOS</a>
+      </nav>
+    </aside>
+    <div style="flex:1; display:flex; flex-direction:column;">
+      <header class="topbar">
+        <strong>Plateforme e-learning IFSI</strong>
+        <span class="badge">— version statique, sans backend</span>
+      </header>
+      <main>
+        <h1>Anatomie 3D</h1>
+        <p class="muted">
+          ⚠️ Modèle géométrique de repère (placeholder), pas un vrai modèle
+          anatomique. Voir la note en bas de page pour la source recommandée.
+        </p>
+
+        <div style="margin-bottom:12px;">
+          <label for="system-select">Système anatomique : </label>
+          <select id="system-select"></select>
+        </div>
+
+        <div id="anatomy-canvas-wrap"></div>
+
+        <div style="margin-top:16px;">
+          <h2 style="font-size:16px;">Structures</h2>
+          <ul id="structure-list" style="columns:2; color:#ccc;"></ul>
+          <p class="muted">Mapping non validé cliniquement — à faire relire par un formateur avant diffusion.</p>
+        </div>
+
+        <p class="muted" style="margin-top:24px;">
+          Pour un vrai modèle anatomique interactif (2234 maillages), voir le
+          projet open source <a href="https://github.com/ashemag/human-atlas" target="_blank" rel="noopener">ashemag/human-atlas</a>
+          (MIT, données BodyParts3D sous licence CC BY 4.0 — attribution requise).
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/anatomy-mapping.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    // --- Sélecteur de système ---
+    const select = document.getElementById('system-select');
+    ANATOMY_SYSTEMS.forEach((s) => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.fr;
+      select.appendChild(opt);
+    });
+
+    function renderStructures(systemId) {
+      const system = ANATOMY_SYSTEMS.find((s) => s.id === systemId);
+      const list = document.getElementById('structure-list');
+      list.innerHTML = system.structures.map((s) =>
+        `<li>${s.fr} <span class="muted">(${s.en})</span></li>`
+      ).join('');
+    }
+    select.addEventListener('change', (e) => renderStructures(e.target.value));
+    renderStructures(ANATOMY_SYSTEMS[0].id);
+
+    // --- Viewer 3D placeholder (Three.js) ---
+    const wrap = document.getElementById('anatomy-canvas-wrap');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+    camera.position.set(2.5, 1.5, 2.5);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    wrap.appendChild(renderer.domElement);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    dirLight.position.set(3, 5, 2);
+    scene.add(dirLight);
+
+    const bodyColor = 0xe0b98a;
+    const group = new THREE.Group();
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 32), new THREE.MeshStandardMaterial({ color: bodyColor }));
+    head.position.set(0, 0.75, 0);
+    const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 0.9, 8, 16), new THREE.MeshStandardMaterial({ color: bodyColor }));
+    torso.position.set(0, 0.1, 0);
+    const armL = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.7, 8, 16), new THREE.MeshStandardMaterial({ color: bodyColor }));
+    armL.position.set(-0.55, 0.15, 0); armL.rotation.z = Math.PI / 10;
+    const armR = armL.clone(); armR.position.x = 0.55; armR.rotation.z = -Math.PI / 10;
+    group.add(head, torso, armL, armR);
+    scene.add(group);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.minDistance = 1;
+    controls.maxDistance = 8;
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = wrap.clientWidth / wrap.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    });
+  </script>
+</body>
+</html>
