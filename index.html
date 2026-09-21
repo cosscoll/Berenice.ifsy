@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau de bord — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Tableau de bord</h1>
+        <p class="page-intro">
+          Bienvenue. Tout se passe dans ce navigateur : rien à installer, vos
+          révisions sont sauvegardées automatiquement sur cet appareil.
+        </p>
+
+        <div class="stat-hero">
+          <span class="number" id="due-today">–</span>
+          <span class="label">carte(s) à réviser aujourd'hui</span>
+        </div>
+
+        <ul class="path-list">
+          <li>
+            <a href="ue.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Catalogue UE</span>
+                <span class="path-desc">Les 59 unités d'enseignement du référentiel 2026</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="revision.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Révision</span>
+                <span class="path-desc">Fiches en répétition espacée, avec carte mentale</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="cartes-mentales.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Cartes mentales</span>
+                <span class="path-desc">Synthèses par grand chapitre (urgences, cardio, pharmaco...)</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="anatomie.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Anatomie</span>
+                <span class="path-desc">Schémas 2D par système, légendés en français</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="ecos.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Simulation ECOS</span>
+                <span class="path-desc">11 cas cliniques, auto-évaluation guidée</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="apprendre.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Comment réviser</span>
+                <span class="path-desc">Méthodes de mémorisation basées sur la recherche</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="muted" style="margin-top:32px;">
+          Pas d'avatar patient IA ici — ça demanderait une clé API payante et
+          un serveur pour la protéger. Les cas ECOS se jouent en binôme.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/fsrs.js"></script>
+  <script>
+    renderNav('dashboard');
+    document.querySelectorAll('.icon-badge').forEach((el, i) => {
+      const icons = ['book', 'cards', 'map', 'body', 'patient', 'lightbulb'];
+      el.innerHTML = ICONS[icons[i]];
+    });
+    document.querySelectorAll('.chevron').forEach((el) => { el.innerHTML = ICONS.chevron; });
+    document.getElementById('due-today').textContent = getDueCards(FSRS_DECK).length;
+  </script>
+</body>
+</html>
