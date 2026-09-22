@@ -52,6 +52,22 @@ restaient vides au clic. Réécrit avec l'API directe `markmap-lib` /
 `markmap-view` (voir `assets/markmap-helper.js`), qui fonctionne à chaque
 changement de carte, y compris sur du contenu ajouté après coup.
 
+## En cas de problème
+
+Le site inclut maintenant une **bannière d'erreur automatique** : si un
+script échoue, un message rouge apparaît en bas de l'écran avec le détail.
+Si vous voyez ça, copiez-collez le message tel quel pour que je puisse
+corriger précisément.
+
+Si une page semble ne pas répondre après une mise à jour du dépôt :
+1. Faites un **rechargement forcé** (Ctrl+Maj+R sur Windows/Linux,
+   Cmd+Maj+R sur Mac) — GitHub Pages et les navigateurs mettent les fichiers
+   en cache, une page peut afficher une ancienne version pendant un moment.
+2. Vérifiez que GitHub Pages a bien fini de redéployer (**Settings → Pages**
+   affiche l'heure du dernier déploiement).
+3. Si le problème persiste, ouvrez la page dans une fenêtre de navigation
+   privée pour éliminer le cache comme cause.
+
 ## D'où vient le contenu
 
 Les faits cliniques précis (score de Glasgow, échelle de Braden, 5 moments
@@ -80,14 +96,16 @@ anatomie.html               schémas anatomiques 2D
 ecos.html                    simulations ECOS
 ressources.html                sites de référence + liens YouTube par thème
 apprendre.html                   méthodes de révision
-assets/style.css                  système de design
+assets/style.css                  système de design (couleurs, typo, composants, responsive)
 assets/nav.js                       génère la barre de navigation
 assets/icons.js                       icônes SVG inline
-assets/student.js                       personnalisation (prénom, streak, encouragements)
-assets/data.js                            données (UE, fiches FSRS, scénarios ECOS)
-assets/chapter-maps.js                      cartes mentales de chapitre (15)
-assets/resources-data.js                      sites vérifiés + thèmes YouTube
-assets/markmap-helper.js                        rendu Markmap fiable (API directe)
-assets/fsrs.js                                    moteur de répétition espacée simplifié
-assets/anatomy-mapping.js                           lexique + coordonnées des schémas anatomiques
+assets/error-reporter.js                affiche les erreurs JS visiblement (diagnostic)
+assets/student.js                         personnalisation (prénom, streak, encouragements)
+assets/data.js                              données (UE, fiches FSRS, scénarios ECOS)
+assets/chapter-maps.js                        cartes mentales de chapitre (15)
+assets/resources-data.js                        sites vérifiés + thèmes YouTube
+assets/real-plates.js                             vraies planches Gray's Anatomy (domaine public)
+assets/markmap-helper.js                            rendu Markmap fiable (API directe)
+assets/fsrs.js                                        moteur de répétition espacée simplifié
+assets/anatomy-mapping.js                               lexique + coordonnées des schémas
 ```

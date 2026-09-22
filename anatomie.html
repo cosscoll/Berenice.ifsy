@@ -41,7 +41,9 @@
           </div>
         </div>
 
-        <p class="muted" style="margin-top:28px;">
+        <div id="real-plates-section" style="margin-top:28px;"></div>
+
+        <p class="muted" style="margin-top:24px;">
           Pour un vrai atlas 3D interactif, voir le projet open source
           <a href="https://github.com/ashemag/human-atlas" target="_blank" rel="noopener">ashemag/human-atlas</a>
           (données BodyParts3D, licence CC BY 4.0).
@@ -50,9 +52,11 @@
     </div>
   </div>
 
+  <script src="assets/error-reporter.js"></script>
   <script src="assets/icons.js"></script>
   <script src="assets/nav.js"></script>
   <script src="assets/anatomy-mapping.js"></script>
+  <script src="assets/real-plates.js"></script>
   <script>
     renderNav('anatomie');
 
@@ -81,6 +85,27 @@
           ${s.x != null ? '' : '<span class="muted" style="font-size:11px;">(non localisé sur le schéma)</span>'}
         </li>
       `).join('');
+
+      const plates = platesForSystem(systemId);
+      const platesSection = document.getElementById('real-plates-section');
+      if (plates.length === 0) {
+        platesSection.innerHTML = '';
+      } else {
+        platesSection.innerHTML = `
+          <h2>Planches d'anatomie (Gray's Anatomy, 1918 — domaine public)</h2>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+            ${plates.map((p) => `
+              <figure style="margin:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px;">
+                <img src="${grayPlateUrl(p.file)}" alt="${p.titre}" style="width:100%; height:auto; border-radius:6px; background:#fff;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.querySelector('.img-error').style.display='block';" />
+                <figcaption class="muted" style="margin-top:8px; font-size:13px;">${p.titre}<br><span class="img-error" style="display:none; color:var(--brick);">Image indisponible (Wikimedia Commons injoignable)</span></figcaption>
+              </figure>
+            `).join('')}
+          </div>
+          <p class="muted" style="margin-top:8px; font-size:12px;">
+            Henry Gray, <em>Anatomy of the Human Body</em>, 20e édition (1918) — domaine public, via Wikimedia Commons.
+          </p>
+        `;
+      }
     }
 
     chipsEl.querySelectorAll('.system-chip').forEach((chip) => {

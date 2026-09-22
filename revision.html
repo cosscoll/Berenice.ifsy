@@ -13,11 +13,16 @@
       <main>
         <h1>Révision</h1>
         <p class="page-intro">Répétition espacée. Lisez la question, essayez d'y répondre de tête, puis révélez.</p>
+        <label style="display:flex; align-items:center; gap:8px; margin-bottom:16px; font-size:14px; cursor:pointer;">
+          <input type="checkbox" id="cram-toggle" style="accent-color:var(--pine); width:16px; height:16px;">
+          Mode "tout réviser" (ignore les dates, utile avant un examen)
+        </label>
         <div id="revision-area"></div>
       </main>
     </div>
   </div>
 
+  <script src="assets/error-reporter.js"></script>
   <script src="assets/icons.js"></script>
   <script src="assets/nav.js"></script>
   <script src="assets/student.js"></script>
@@ -32,9 +37,14 @@
 
     let sessionTotal = null;
     let revealed = false;
+    let cramMode = false;
+
+    function currentDeck() {
+      return cramMode ? FSRS_DECK : getDueCards(FSRS_DECK);
+    }
 
     function render() {
-      const due = getDueCards(FSRS_DECK);
+      const due = currentDeck();
       const area = document.getElementById('revision-area');
 
       if (sessionTotal === null) sessionTotal = due.length || 1;
@@ -44,9 +54,10 @@
           <div class="done-state">
             <h1>Bravo ${STUDENT_NAME}, terminé pour aujourd'hui 🌿</h1>
             <p class="muted">${randomEncouragement()} Revenez demain pour la suite, ou réinitialisez la démo.</p>
-            <button onclick="resetDemo()">Réinitialiser les cartes de démonstration</button>
+            <button id="reset-btn">Réinitialiser les cartes de démonstration</button>
           </div>
         `;
+        document.getElementById('reset-btn').addEventListener('click', resetDemo);
         return;
       }
 
@@ -64,23 +75,34 @@
           ${revealed ? `
             <div class="back-reveal">${current.back}</div>
             <h3 style="margin-top:24px; text-align:left;">Carte mentale</h3>
-            <div class="markmap open tall" style="text-align:left;">
+            <div class="markmap open tall" style="text-align:left;" id="mindmap-wrap">
               <svg id="mindmap-svg" style="width:100%; height:280px;"></svg>
             </div>
             <div class="rating-bar">
-              <button class="rate-again" onclick="rate('${current.id}', 1)">À revoir<span class="key">1</span></button>
-              <button class="rate-hard" onclick="rate('${current.id}', 2)">Difficile<span class="key">2</span></button>
-              <button class="rate-good" onclick="rate('${current.id}', 3)">Bien<span class="key">3</span></button>
-              <button class="rate-easy" onclick="rate('${current.id}', 4)">Facile<span class="key">4</span></button>
+              <button class="rate-again" data-rating="1">À revoir<span class="key">1</span></button>
+              <button class="rate-hard" data-rating="2">Difficile<span class="key">2</span></button>
+              <button class="rate-good" data-rating="3">Bien<span class="key">3</span></button>
+              <button class="rate-easy" data-rating="4">Facile<span class="key">4</span></button>
             </div>
           ` : `
-            <button class="primary reveal-btn" onclick="reveal()">Révéler la réponse <span class="key">Espace</span></button>
+            <button class="primary reveal-btn" id="reveal-btn">Révéler la réponse <span class="key">Espace</span></button>
           `}
         </div>
       `;
 
       if (revealed) {
-        renderMindmap(document.getElementById('mindmap-svg'), current.md);
+        try {
+          renderMindmap(document.getElementById('mindmap-svg'), current.md);
+        } catch (err) {
+          console.error('Rendu de la carte mentale impossible :', err);
+          document.getElementById('mindmap-wrap').innerHTML =
+            '<p class="muted">Carte mentale indisponible (connexion internet nécessaire pour markmap).</p>';
+        }
+        document.querySelectorAll('.rating-bar button').forEach((btn) => {
+          btn.addEventListener('click', () => rate(current.id, Number(btn.dataset.rating)));
+        });
+      } else {
+        document.getElementById('reveal-btn').addEventListener('click', reveal);
       }
     }
 
@@ -99,10 +121,17 @@
       render();
     }
 
+    document.getElementById('cram-toggle').addEventListener('change', (e) => {
+      cramMode = e.target.checked;
+      sessionTotal = null;
+      revealed = false;
+      render();
+    });
+
     document.addEventListener('keydown', (e) => {
       if (!revealed && e.code === 'Space') { e.preventDefault(); reveal(); }
       if (revealed && ['1', '2', '3', '4'].includes(e.key)) {
-        const due = getDueCards(FSRS_DECK);
+        const due = currentDeck();
         if (due[0]) rate(due[0].id, Number(e.key));
       }
     });

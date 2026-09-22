@@ -353,10 +353,43 @@ button.primary:hover { background: #264a42; }
   .brand { margin-bottom: 0; margin-right: 12px; white-space: nowrap; }
   .nav-list { flex-direction: row; }
   .nav-list a span { display: none; }
-  main { padding: 24px 20px 60px; }
-  .stat-hero .number { font-size: 48px; }
+  .nav-list a { padding: 10px; }
+  main { padding: 20px 16px 60px; }
+
+  h1 { font-size: 24px; }
+  .stat-hero { gap: 10px; }
+  .stat-hero .number { font-size: 40px; }
+
+  .study-card { padding: 20px 16px; }
+  .study-card .front { font-size: 18px; }
+  .rating-bar { grid-template-columns: repeat(2, 1fr); }
+
   .anatomy-layout { flex-direction: column; }
-  .anatomy-diagram { width: 100%; }
+  .anatomy-diagram { width: 100%; max-width: 280px; margin: 0 auto; }
+
+  .ecos-layout { flex-direction: column; }
+
+  .checklist label { font-size: 13px; }
+  .pts-tag { margin-left: 0; }
+
+  .score-box { flex-direction: column; align-items: stretch; text-align: center; }
+
+  .system-chips { gap: 6px; }
+  .system-chip { padding: 6px 12px; font-size: 12px; }
+
+  .ue-list li { flex-direction: column; gap: 2px; }
+
+  .path-list .path-desc { font-size: 12px; }
+
+  #js-error-banner { font-size: 11px; }
+}
+
+@media (max-width: 480px) {
+  .rating-bar { grid-template-columns: 1fr 1fr; }
+  .rating-bar button { padding: 10px 4px; font-size: 12px; }
+  .stat-hero { flex-direction: column; align-items: flex-start; gap: 2px; }
+  main { padding: 16px 12px 60px; }
+  .study-card { border-radius: 12px; }
 }
 
 /* ---------- Accessibilité ---------- */
