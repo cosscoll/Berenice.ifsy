@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Révision — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Révision</h1>
+        <p class="page-intro">Répétition espacée. Lisez la question, essayez d'y répondre de tête, puis révélez.</p>
+        <div id="revision-area"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/fsrs.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-lib"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view"></script>
+  <script src="assets/markmap-helper.js"></script>
+  <script>
+    renderNav('revision');
+
+    let sessionTotal = null;
+    let revealed = false;
+
+    function render() {
+      const due = getDueCards(FSRS_DECK);
+      const area = document.getElementById('revision-area');
+
+      if (sessionTotal === null) sessionTotal = due.length || 1;
+
+      if (due.length === 0) {
+        area.innerHTML = `
+          <div class="done-state">
+            <h1>Bravo ${STUDENT_NAME}, terminé pour aujourd'hui 🌿</h1>
+            <p class="muted">${randomEncouragement()} Revenez demain pour la suite, ou réinitialisez la démo.</p>
+            <button onclick="resetDemo()">Réinitialiser les cartes de démonstration</button>
+          </div>
+        `;
+        return;
+      }
+
+      const current = due[0];
+      const done = sessionTotal - due.length;
+      const pct = Math.round((done / sessionTotal) * 100);
+
+      area.innerHTML = `
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <p class="progress-label">${done} / ${sessionTotal} cartes traitées</p>
+
+        <div class="study-card">
+          <span class="ue-tag">UE${current.ue} — ${current.concept}</span>
+          <p class="front">${current.front}</p>
+          ${revealed ? `
+            <div class="back-reveal">${current.back}</div>
+            <h3 style="margin-top:24px; text-align:left;">Carte mentale</h3>
+            <div class="markmap open tall" style="text-align:left;">
+              <svg id="mindmap-svg" style="width:100%; height:280px;"></svg>
+            </div>
+            <div class="rating-bar">
+              <button class="rate-again" onclick="rate('${current.id}', 1)">À revoir<span class="key">1</span></button>
+              <button class="rate-hard" onclick="rate('${current.id}', 2)">Difficile<span class="key">2</span></button>
+              <button class="rate-good" onclick="rate('${current.id}', 3)">Bien<span class="key">3</span></button>
+              <button class="rate-easy" onclick="rate('${current.id}', 4)">Facile<span class="key">4</span></button>
+            </div>
+          ` : `
+            <button class="primary reveal-btn" onclick="reveal()">Révéler la réponse <span class="key">Espace</span></button>
+          `}
+        </div>
+      `;
+
+      if (revealed) {
+        renderMindmap(document.getElementById('mindmap-svg'), current.md);
+      }
+    }
+
+    function reveal() { revealed = true; render(); }
+
+    function rate(cardId, rating) {
+      reviewCard(cardId, rating);
+      revealed = false;
+      render();
+    }
+
+    function resetDemo() {
+      localStorage.removeItem(FSRS_STORAGE_KEY);
+      sessionTotal = null;
+      revealed = false;
+      render();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!revealed && e.code === 'Space') { e.preventDefault(); reveal(); }
+      if (revealed && ['1', '2', '3', '4'].includes(e.key)) {
+        const due = getDueCards(FSRS_DECK);
+        if (due[0]) rate(due[0].id, Number(e.key));
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
