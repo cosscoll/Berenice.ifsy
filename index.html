@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tableau de bord — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1 id="greeting">Bonjour</h1>
+        <p class="page-intro" id="encouragement"></p>
+
+        <div style="display:flex; gap:32px; flex-wrap:wrap; margin-bottom:8px;">
+          <div class="stat-hero">
+            <span class="number" id="due-today">–</span>
+            <span class="label">carte(s) à réviser aujourd'hui</span>
+          </div>
+          <div class="stat-hero">
+            <span class="number" id="streak-count" style="color:var(--brick);">–</span>
+            <span class="label">jour(s) de suite</span>
+          </div>
+        </div>
+
+        <ul class="path-list" style="margin-top:24px;">
+          <li>
+            <a href="ue.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Catalogue UE</span>
+                <span class="path-desc">Les 59 unités d'enseignement du référentiel 2026</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="revision.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Révision</span>
+                <span class="path-desc">Fiches en répétition espacée, avec carte mentale</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="cartes-mentales.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Cartes mentales</span>
+                <span class="path-desc">Synthèses par grand chapitre</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="anatomie.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Anatomie</span>
+                <span class="path-desc">Schémas 2D par système, légendés en français</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="ecos.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Simulation ECOS</span>
+                <span class="path-desc">11 cas cliniques, auto-évaluation guidée</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="ressources.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Ressources</span>
+                <span class="path-desc">Sites de référence et vidéos pour approfondir</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+          <li>
+            <a href="apprendre.html">
+              <span class="icon-badge"></span>
+              <span>
+                <span class="path-title">Comment réviser</span>
+                <span class="path-desc">Méthodes de mémorisation basées sur la recherche</span>
+              </span>
+              <span class="chevron"></span>
+            </a>
+          </li>
+        </ul>
+
+        <p class="muted" style="margin-top:32px;">
+          Pas d'avatar patient IA ici — ça demanderait une clé API payante et
+          un serveur pour la protéger. Les cas ECOS se jouent en binôme.
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/fsrs.js"></script>
+  <script>
+    renderNav('dashboard');
+
+    document.getElementById('greeting').textContent = `Bonjour ${STUDENT_NAME}`;
+    document.getElementById('encouragement').textContent = randomEncouragement();
+
+    const icons = ['book', 'cards', 'map', 'body', 'patient', 'link', 'lightbulb'];
+    document.querySelectorAll('.icon-badge').forEach((el, i) => { el.innerHTML = ICONS[icons[i]]; });
+    document.querySelectorAll('.chevron').forEach((el) => { el.innerHTML = ICONS.chevron; });
+
+    document.getElementById('due-today').textContent = getDueCards(FSRS_DECK).length;
+
+    const { streak } = recordVisitAndGetStreakInfo();
+    document.getElementById('streak-count').textContent = streak;
+  </script>
+</body>
+</html>
