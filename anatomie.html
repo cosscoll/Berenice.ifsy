@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anatomie — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Anatomie</h1>
+        <p class="page-intro">
+          Schéma simplifié à visée de repérage général — pas une
+          représentation à l'échelle. Choisissez un système pour voir ses
+          principales structures.
+        </p>
+
+        <div class="system-chips" id="system-chips"></div>
+
+        <div class="anatomy-layout">
+          <div class="anatomy-diagram">
+            <svg id="body-svg" viewBox="0 0 200 420" style="width:100%; height:auto;">
+              <!-- Silhouette de repère -->
+              <circle cx="100" cy="40" r="26" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="70" y="66" width="60" height="130" rx="18" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="42" y="90" width="26" height="120" rx="12" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="132" y="90" width="26" height="120" rx="12" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="72" y="190" width="56" height="70" rx="16" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="76" y="255" width="22" height="140" rx="11" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <rect x="102" y="255" width="22" height="140" rx="11" fill="#EDE7D8" stroke="#D9D2C2" stroke-width="2"/>
+              <g id="markers"></g>
+            </svg>
+          </div>
+
+          <div class="anatomy-structures">
+            <h2 id="system-title"></h2>
+            <ul class="structure-list" id="structure-list"></ul>
+          </div>
+        </div>
+
+        <div id="real-plates-section" style="margin-top:28px;"></div>
+
+        <p class="muted" style="margin-top:24px;">
+          Pour un vrai atlas 3D interactif, voir le projet open source
+          <a href="https://github.com/ashemag/human-atlas" target="_blank" rel="noopener">ashemag/human-atlas</a>
+          (données BodyParts3D, licence CC BY 4.0).
+        </p>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/anatomy-mapping.js"></script>
+  <script src="assets/real-plates.js"></script>
+  <script>
+    renderNav('anatomie');
+
+    const chipsEl = document.getElementById('system-chips');
+    chipsEl.innerHTML = ANATOMY_SYSTEMS.map((s) =>
+      `<button class="system-chip" data-id="${s.id}">${s.fr}</button>`
+    ).join('');
+
+    function selectSystem(systemId) {
+      const system = ANATOMY_SYSTEMS.find((s) => s.id === systemId);
+
+      chipsEl.querySelectorAll('.system-chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.dataset.id === systemId);
+      });
+
+      document.getElementById('system-title').textContent = system.fr;
+
+      const withCoords = system.structures.filter((s) => s.x != null);
+      document.getElementById('markers').innerHTML = withCoords.map((s) =>
+        `<circle cx="${s.x}" cy="${s.y}" r="5" fill="${system.color}" stroke="#fff" stroke-width="1.5"><title>${s.fr}</title></circle>`
+      ).join('');
+
+      document.getElementById('structure-list').innerHTML = system.structures.map((s) => `
+        <li>
+          <span><span class="structure-fr">${s.fr}</span><br><span class="structure-en">${s.en}</span></span>
+          ${s.x != null ? '' : '<span class="muted" style="font-size:11px;">(non localisé sur le schéma)</span>'}
+        </li>
+      `).join('');
+
+      const plates = platesForSystem(systemId);
+      const platesSection = document.getElementById('real-plates-section');
+      if (plates.length === 0) {
+        platesSection.innerHTML = '';
+      } else {
+        platesSection.innerHTML = `
+          <h2>Planches d'anatomie (Gray's Anatomy, 1918 — domaine public)</h2>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:16px;">
+            ${plates.map((p) => `
+              <figure style="margin:0; background:#fff; border:1px solid var(--line); border-radius:12px; padding:12px;">
+                <img src="${grayPlateUrl(p.file)}" alt="${p.titre}" style="width:100%; height:auto; border-radius:6px; background:#fff;" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.querySelector('.img-error').style.display='block';" />
+                <figcaption class="muted" style="margin-top:8px; font-size:13px;">${p.titre}<br><span class="img-error" style="display:none; color:var(--brick);">Image indisponible (Wikimedia Commons injoignable)</span></figcaption>
+              </figure>
+            `).join('')}
+          </div>
+          <p class="muted" style="margin-top:8px; font-size:12px;">
+            Henry Gray, <em>Anatomy of the Human Body</em>, 20e édition (1918) — domaine public, via Wikimedia Commons.
+          </p>
+        `;
+      }
+    }
+
+    chipsEl.querySelectorAll('.system-chip').forEach((chip) => {
+      chip.addEventListener('click', () => selectSystem(chip.dataset.id));
+    });
+
+    selectSystem(ANATOMY_SYSTEMS[0].id);
+  </script>
+</body>
+</html>
