@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Catalogue UE — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Catalogue UE</h1>
+        <p class="page-intro">
+          Référentiel infirmier 2026 (3 ans, 4620h). Les titres sont saisis ;
+          le contenu détaillé de cours reste à rédiger UE par UE.
+        </p>
+        <div id="ue-container"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/data.js"></script>
+  <script>
+    renderNav('ue');
+
+    const container = document.getElementById('ue-container');
+    UE_CATALOGUE.forEach((bloc) => {
+      const section = document.createElement('div');
+      section.className = 'ue-bloc';
+      const list = bloc.ues.map((ue) =>
+        `<li><span class="ue-code">${ue.id}</span><span>${ue.titre}</span></li>`
+      ).join('');
+      section.innerHTML = `
+        <h2>${bloc.bloc}</h2>
+        <p class="bloc-desc muted">${bloc.titreBloc}</p>
+        <ul class="ue-list">${list}</ul>
+      `;
+      container.appendChild(section);
+    });
+  </script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>initNurseAvatar('ue');</script>
+</body>
+</html>

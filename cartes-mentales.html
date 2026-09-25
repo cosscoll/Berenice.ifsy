@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Cartes mentales — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Cartes mentales</h1>
+        <p class="page-intro">
+          Synthèses par grand chapitre — pour une vue d'ensemble avant de
+          descendre au détail dans les fiches de révision.
+        </p>
+
+        <div class="system-chips" id="chapter-chips"></div>
+        <div id="chapter-map-area"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/chapter-maps.js"></script>
+  <script src="assets/simple-mindmap.js"></script>
+  <script>
+    renderNav('cartes-mentales');
+
+    const chipsEl = document.getElementById('chapter-chips');
+    chipsEl.innerHTML = CHAPTER_MAPS.map((c) =>
+      `<button class="system-chip" data-id="${c.id}">${c.titre}</button>`
+    ).join('');
+
+    function selectChapter(id) {
+      const chapter = CHAPTER_MAPS.find((c) => c.id === id);
+      chipsEl.querySelectorAll('.system-chip').forEach((chip) => {
+        chip.classList.toggle('active', chip.dataset.id === id);
+      });
+
+      document.getElementById('chapter-map-area').innerHTML = `
+        <div class="study-card" style="text-align:left; max-width:none;">
+          <span class="ue-tag">${chapter.ue}</span>
+          <h2 style="margin-top:8px;">${chapter.titre}</h2>
+          <p class="muted" style="margin-top:-6px; font-size:12px;">Glissez pour déplacer, molette pour zoomer, ⤢ pour agrandir, ⬇ pour télécharger.</p>
+          <div id="chapter-mindmap-wrap" style="margin-top:8px;"></div>
+        </div>
+      `;
+      try {
+        renderMindmapInto(document.getElementById('chapter-mindmap-wrap'), chapter.md, { height: 520, title: chapter.titre });
+      } catch (err) {
+        console.error('Rendu de la carte mentale impossible :', err);
+        document.getElementById('chapter-mindmap-wrap').innerHTML =
+          '<p class="muted">Carte mentale indisponible pour ce chapitre (erreur interne — voir la bannière ci-dessous).</p>';
+      }
+    }
+
+    chipsEl.querySelectorAll('.system-chip').forEach((chip) => {
+      chip.addEventListener('click', () => selectChapter(chip.dataset.id));
+    });
+
+    selectChapter(CHAPTER_MAPS[0].id);
+  </script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>initNurseAvatar('cartes-mentales');</script>
+</body>
+</html>

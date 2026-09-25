@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Révision — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1>Révision</h1>
+        <p class="page-intro">Répétition espacée. Lisez la question, essayez d'y répondre de tête, puis révélez.</p>
+
+        <label style="display:block; margin-bottom:20px; font-size:14px;">
+          Que voulez-vous réviser ?
+          <select id="subject-select" style="display:block; margin-top:6px; width:100%; max-width:420px;"></select>
+        </label>
+
+        <div id="revision-area"></div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/fsrs.js"></script>
+  <script src="assets/simple-mindmap.js"></script>
+  <script>
+    renderNav('revision');
+
+    let sessionTotal = null;
+    let revealed = false;
+    let mode = 'due'; // 'due' | 'cram' | 'ue:<code>'
+
+    function ueTitle(code) {
+      for (const bloc of UE_CATALOGUE) {
+        const found = bloc.ues.find((u) => u.id === code);
+        if (found) return found.titre;
+      }
+      return '';
+    }
+
+    function buildSubjectOptions() {
+      const select = document.getElementById('subject-select');
+      const ueCounts = {};
+      FSRS_DECK.forEach((c) => { ueCounts[c.ue] = (ueCounts[c.ue] || 0) + 1; });
+      const ueCodes = Object.keys(ueCounts).sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
+      const chapterOptions = ueCodes
+        .map((code) => `<option value="ue:${code}">UE ${code} — ${ueTitle(code)} (${ueCounts[code]} fiche${ueCounts[code] > 1 ? 's' : ''})</option>`)
+        .join('');
+
+      select.innerHTML = `
+        <optgroup label="Session du jour">
+          <option value="due">Fiches dues aujourd'hui</option>
+          <option value="cram">Bachotage complet (toutes les UE, sans tenir compte des dates)</option>
+        </optgroup>
+        <optgroup label="Réviser un chapitre précis (toutes les fiches de cette UE)">
+          ${chapterOptions}
+        </optgroup>
+      `;
+      select.value = mode;
+    }
+
+    function currentDeck() {
+      if (mode.startsWith('ue:')) {
+        const code = mode.slice(3);
+        return FSRS_DECK.filter((c) => c.ue === code);
+      }
+      return mode === 'cram' ? FSRS_DECK : getDueCards(FSRS_DECK);
+    }
+
+    function render() {
+      const due = currentDeck();
+      const area = document.getElementById('revision-area');
+
+      if (sessionTotal === null) sessionTotal = due.length || 1;
+
+      if (due.length === 0) {
+        const isDueMode = mode === 'due';
+        area.innerHTML = `
+          <div class="done-state">
+            <h1>${isDueMode ? `Bravo ${STUDENT_NAME}, terminé pour aujourd'hui 🌿` : 'Aucune fiche dans cette sélection'}</h1>
+            <p class="muted">${isDueMode ? randomEncouragement() + ' Revenez demain, ou choisissez un chapitre précis ci-dessus.' : 'Choisissez un autre chapitre ci-dessus.'}</p>
+            ${isDueMode ? '<button id="reset-btn">Réinitialiser les cartes de démonstration</button>' : ''}
+          </div>
+        `;
+        const resetBtn = document.getElementById('reset-btn');
+        if (resetBtn) resetBtn.addEventListener('click', resetDemo);
+        return;
+      }
+
+      const current = due[0];
+      const done = sessionTotal - due.length;
+      const pct = Math.round((done / sessionTotal) * 100);
+
+      area.innerHTML = `
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <p class="progress-label">${done} / ${sessionTotal} cartes traitées</p>
+
+        <div class="study-card">
+          <span class="ue-tag">UE${current.ue} — ${current.concept}</span>
+          <p class="front">${current.front}</p>
+          ${revealed ? `
+            <div class="back-reveal">${current.back}</div>
+            <h3 style="margin-top:24px; text-align:left;">Carte mentale</h3>
+            <p class="muted" style="text-align:left; margin-top:-4px; margin-bottom:8px; font-size:12px;">Glissez pour déplacer, molette pour zoomer, ⤢ pour agrandir.</p>
+            <div id="mindmap-wrap" style="text-align:left;"></div>
+            <div class="rating-bar">
+              <button class="rate-again" data-rating="1">À revoir<span class="key">1</span></button>
+              <button class="rate-hard" data-rating="2">Difficile<span class="key">2</span></button>
+              <button class="rate-good" data-rating="3">Bien<span class="key">3</span></button>
+              <button class="rate-easy" data-rating="4">Facile<span class="key">4</span></button>
+            </div>
+          ` : `
+            <button class="primary reveal-btn" id="reveal-btn">Révéler la réponse <span class="key">Espace</span></button>
+          `}
+        </div>
+      `;
+
+      if (revealed) {
+        try {
+          renderMindmapInto(document.getElementById('mindmap-wrap'), current.md, { height: 320, title: current.concept });
+        } catch (err) {
+          console.error('Rendu de la carte mentale impossible :', err);
+          document.getElementById('mindmap-wrap').innerHTML =
+            '<p class="muted">Carte mentale indisponible pour cette fiche.</p>';
+        }
+        document.querySelectorAll('.rating-bar button').forEach((btn) => {
+          btn.addEventListener('click', () => rate(current.id, Number(btn.dataset.rating)));
+        });
+      } else {
+        document.getElementById('reveal-btn').addEventListener('click', reveal);
+      }
+    }
+
+    function reveal() { revealed = true; render(); }
+
+    function rate(cardId, rating) {
+      reviewCard(cardId, rating);
+      revealed = false;
+      render();
+    }
+
+    function resetDemo() {
+      localStorage.removeItem(FSRS_STORAGE_KEY);
+      sessionTotal = null;
+      revealed = false;
+      render();
+    }
+
+    buildSubjectOptions();
+    document.getElementById('subject-select').addEventListener('change', (e) => {
+      mode = e.target.value;
+      sessionTotal = null;
+      revealed = false;
+      render();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!revealed && e.code === 'Space') { e.preventDefault(); reveal(); }
+      if (revealed && ['1', '2', '3', '4'].includes(e.key)) {
+        const due = currentDeck();
+        if (due[0]) rate(due[0].id, Number(e.key));
+      }
+    });
+
+    render();
+  </script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>initNurseAvatar('revision');</script>
+</body>
+</html>

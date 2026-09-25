@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mes tâches — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <h1 id="todo-title">Mes tâches</h1>
+        <p class="page-intro">Organise tes révisions, stages et démarches administratives. Tout reste dans ce navigateur, et tu peux tout télécharger en fichier texte à tout moment.</p>
+
+        <form id="todo-form" style="display:flex; gap:8px; margin-bottom:20px;">
+          <input id="todo-input" type="text" placeholder="Ex : Réviser UE 2.11, imprimer convention de stage…" style="flex:1;" required>
+          <button type="submit" class="primary">Ajouter</button>
+        </form>
+
+        <ul id="todo-list" style="list-style:none; padding:0;"></ul>
+
+        <div style="display:flex; gap:8px; margin-top:16px;">
+          <button id="download-btn">Télécharger la liste (.txt)</button>
+          <button id="clear-done-btn">Effacer les tâches terminées</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/todo.js"></script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>
+    renderNav('todo');
+    document.getElementById('todo-title').textContent = `Mes tâches, ${STUDENT_NAME}`;
+
+    function render() {
+      const todos = loadTodos();
+      const list = document.getElementById('todo-list');
+      if (todos.length === 0) {
+        list.innerHTML = '<p class="muted">Rien pour l\'instant — ajoute ta première tâche ci-dessus.</p>';
+        return;
+      }
+      list.innerHTML = todos.map((t) => `
+        <li style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);">
+          <input type="checkbox" data-id="${t.id}" class="todo-check" ${t.done ? 'checked' : ''} style="width:18px; height:18px; accent-color:var(--pine);">
+          <span style="flex:1; ${t.done ? 'text-decoration:line-through; color:var(--ink-soft);' : ''}">${t.text}</span>
+          <button data-id="${t.id}" class="todo-delete" style="padding:4px 10px; font-size:12px;">Supprimer</button>
+        </li>
+      `).join('');
+
+      list.querySelectorAll('.todo-check').forEach((cb) => {
+        cb.addEventListener('change', () => { toggleTodo(cb.dataset.id); render(); });
+      });
+      list.querySelectorAll('.todo-delete').forEach((btn) => {
+        btn.addEventListener('click', () => { deleteTodo(btn.dataset.id); render(); });
+      });
+    }
+
+    document.getElementById('todo-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('todo-input');
+      if (!input.value.trim()) return;
+      addTodo(input.value.trim());
+      input.value = '';
+      render();
+    });
+
+    document.getElementById('download-btn').addEventListener('click', () => {
+      downloadTodosAsText(loadTodos(), STUDENT_NAME);
+    });
+
+    document.getElementById('clear-done-btn').addEventListener('click', () => {
+      clearDoneTodos();
+      render();
+    });
+
+    render();
+    initNurseAvatar('todo');
+  </script>
+</body>
+</html>
