@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mon parcours de révision IFSI — trois niveaux</title>
+<meta name="description" content="Un parcours de révision infirmière en trois niveaux indicatifs : cours, mises en situation fictives, évaluations transversales et progression personnelle.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/parcours.html">
+<meta property="og:type" content="website"><meta property="og:title" content="Mon parcours de révision — IFSI">
+<meta property="og:description" content="Reprendre un cours, explorer un cas fictif et vérifier ses connaissances avec une évaluation transversale.">
+<link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css">
+<link rel="stylesheet" href="assets/ux.css?v=pathway14"><link rel="stylesheet" href="assets/pathway.css?v=pathway14">
+</head>
+<body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main class="pathway-main">
+<div class="course-breadcrumb"><a href="index.html">Accueil</a><span aria-hidden="true">›</span><span>Mon parcours</span></div>
+<div id="pathway-root" aria-live="polite"></div>
+</main></div></div>
+<script src="assets/error-reporter.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/nav.js?v=pathway14"></script>
+<script src="assets/v2-core.js"></script>
+<script src="assets/study-topics.js?v=course12"></script>
+<script src="assets/courses-data.js?v=course12"></script>
+<script src="assets/cases-data.js?v=pathway14"></script>
+<script src="assets/quiz-data.js?v=course12"></script>
+<script src="assets/pathway-data.js?v=pathway14"></script>
+<script src="assets/nurse-avatar.js"></script>
+<script>
+renderNav('parcours');
+const root=document.getElementById('pathway-root');
+const stageData=window.IFSI_PATHWAY||[];
+const caseData=window.IFSI_CASES||[];
+const YEAR_KEY='ifsi_pathway_year_v1';
+const EXAM_KEY='ifsi_pathway_assessments_v1';
+const esc=safeText;
+const safeState=k=>{try{const x=JSON.parse(localStorage.getItem(k)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch(e){return {}}};
+const saveState=(key,x)=>{try{localStorage.setItem(key,JSON.stringify(x));return true}catch(e){return false}};
+const params=new URLSearchParams(location.search);
+const rememberedYear=(()=>{try{return localStorage.getItem(YEAR_KEY)}catch(e){return null}})();
+const preferred=params.get('annee')||rememberedYear||'annee1';
+let activeStage=stageData.find(s=>s.id===preferred)||stageData[0];
+let questions=[],answers=[],cursor=0,selectedAnswer=null;
+function casesFor(s){return caseData.filter(c=>c.level===s.level)}
+function courseFor(id){return IFSI_COURSES.find(c=>c.id===id)}
+function getProgress(stage){
+ const courses=safeState('ifsi_course_progress_v1'),situations=safeState('ifsi_cases_progress_v1'),exams=safeState(EXAM_KEY);
+ const studied=stage.topics.filter(id=>{const x=courses[id];return !!(x&&x.read&&x.passed)});
+ const doneCases=casesFor(stage).filter(x=>situations[x.id]&&Number.isFinite(situations[x.id].lastScore));
+ const exam=exams[stage.id]||null;
+ return {studied,doneCases,exam,courseState:courses};
+}
+function setStage(id){
+ const found=stageData.find(s=>s.id===id);if(!found)return;
+ activeStage=found;try{localStorage.setItem(YEAR_KEY,id)}catch(e){}
+ history.replaceState(null,'','parcours.html?annee='+encodeURIComponent(id));showStage();
+}
+function showStage(){
+ if(!activeStage)return;
+ const stage=activeStage,p=getProgress(stage),assignedCases=casesFor(stage),completed=p.studied.length+p.doneCases.length+(p.exam?1:0),total=stage.topics.length+assignedCases.length+1;
+ const nextCourse=stage.topics.map(courseFor).find(c=>c&&!p.studied.includes(c.id));
+ const nextCase=assignedCases.find(c=>!p.doneCases.some(done=>done.id===c.id));
+ const mainAction=nextCourse?{tag:'Étape conseillée',title:nextCourse.title,desc:'Lire le cours et vérifier les connaissances avant de continuer.',href:'cours.html?id='+encodeURIComponent(nextCourse.id),button:'Reprendre ce cours'}:
+  nextCase?{tag:'Mise en pratique',title:nextCase.title,desc:'Une situation fictive avec des choix expliqués.',href:'situations.html?id='+encodeURIComponent(nextCase.id),button:'Faire cette situation'}:
+  {tag:'Évaluation transversale',title:'Faire le point sur mes acquis',desc:'Huit questions issues de plusieurs thèmes. L’évaluation est informative et non certifiante.',href:'parcours.html?evaluation='+encodeURIComponent(stage.id),button:p.exam?'Refaire mon évaluation':'Lancer mon évaluation'};
+ const ratio=Math.round(completed/total*100);
+ root.innerHTML='<header class="pathway-head"><span class="pill">Parcours de révision personnel</span><h1>Avancer à mon rythme</h1><p>Trois niveaux conseillés pour organiser tes révisions. Le découpage est indicatif : il ne reproduit pas les années, semestres ou évaluations officiels de l’IFSI.</p></header>'+
+ '<div class="pathway-tabs" role="group" aria-label="Choisir un niveau">'+stageData.map(s=>'<button type="button" class="pathway-tab '+(s.id===stage.id?'active':'')+'" data-year="'+s.id+'" aria-pressed="'+(s.id===stage.id)+'"><strong>'+esc(s.label)+'</strong><small>'+esc(s.subtitle)+'</small></button>').join('')+'</div>'+
+ '<section class="pathway-focus"><div class="pathway-focus-top"><span class="pill">'+esc(stage.label)+' · '+esc(mainAction.tag)+'</span><span class="pathway-small">'+completed+'/'+total+' étapes explorées</span></div><h2>'+esc(mainAction.title)+'</h2><p>'+esc(mainAction.desc)+'</p><a class="v2-button" href="'+mainAction.href+'">'+esc(mainAction.button)+' →</a><div class="pathway-meter"><span style="width:'+ratio+'%"></span></div><p class="pathway-small">'+ratio+' % des activités proposées terminées ou réalisées. Ce pourcentage ne représente pas la validation du diplôme.</p></section>'+
+ '<div class="pathway-under"><p><strong>Objectif indicatif :</strong> '+esc(stage.goal)+'</p><p>'+p.studied.length+'/'+stage.topics.length+' cours terminés · '+p.doneCases.length+'/'+assignedCases.length+' cas réalisés · '+(p.exam?'1 évaluation faite':'évaluation à découvrir')+'</p></div>'+
+ '<details class="pathway-details"><summary>Voir les cours et les exercices de ce niveau</summary><div class="pathway-detail-content"><section><h2>Lire et comprendre</h2><div class="pathway-items">'+stage.topics.map(id=>{const c=courseFor(id);if(!c)return '';return '<a href="cours.html?id='+encodeURIComponent(id)+'"><span class="pathway-status">'+(p.studied.includes(id)?'✓':'○')+'</span><span>'+esc(c.title)+'</span></a>'}).join('')+'</div></section><section><h2>Mettre en pratique</h2><div class="pathway-items">'+assignedCases.map(c=>'<a href="situations.html?id='+encodeURIComponent(c.id)+'"><span class="pathway-status">'+(p.doneCases.some(d=>d.id===c.id)?'✓':'○')+'</span><span>'+esc(c.title)+'</span></a>').join('')+'</div></section></div></details>'+
+ '<section class="pathway-assessment"><div><span class="pathway-small">Bilan transversal de '+esc(stage.label)+'</span><h2>Faire le point sur plusieurs matières</h2><p>Huit questions tirées des thèmes de ce niveau, avec correction et sources. Accessible même si tu n’as pas terminé tous les cours.</p>'+(p.exam?'<p class="pathway-small">Dernier résultat : '+p.exam.lastScore+'/'+p.exam.lastTotal+' · meilleur : '+p.exam.bestScore+'/'+p.exam.bestTotal+'</p>':'')+'</div><a class="v2-button secondary" href="parcours.html?evaluation='+encodeURIComponent(stage.id)+'">Ouvrir le bilan →</a></section>'+
+ '<p class="pathway-disclaimer">Les choix des thèmes et leur répartition par année sont des propositions de révision, sans valeur officielle. Les exercices ne permettent aucune décision de soin réelle. Les résultats sont stockés uniquement dans ce navigateur.</p>';
+ root.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>setStage(b.dataset.year)));
+}
+function startEvaluation(stage){
+ const pool=ifsiChooseQuestions(stage,STUDY_TOPICS,QUIZ_BANK,8);
+ if(pool.length<6){root.innerHTML='<p>Cette évaluation manque de questions pour être proposée. <a href="parcours.html">Retour</a></p>';return}
+ activeStage=stage;
+ try{localStorage.setItem(YEAR_KEY,stage.id)}catch(e){}
+ questions=pool;answers=[];cursor=0;selectedAnswer=null;
+ history.replaceState(null,'','parcours.html?evaluation='+encodeURIComponent(stage.id));
+ renderEvaluation();
+}
+function showEvaluationIntro(stage){
+ activeStage=stage;
+ const prev=safeState(EXAM_KEY)[stage.id];
+ root.innerHTML='<div class="pathway-eval-intro"><a class="pathway-small" href="parcours.html?annee='+encodeURIComponent(stage.id)+'">← Retour au parcours</a><span class="pill">Évaluation transversale · '+esc(stage.label)+'</span><h1>Vérifier mes acquis sur plusieurs thèmes</h1><p>Huit questions choisies parmi les cours de ce niveau. Une réponse par question, correction complète et sources à la fin. Aucune note officielle ni certification.</p>'+(prev?'<p class="pathway-small">Précédent résultat : '+prev.lastScore+'/'+prev.lastTotal+'</p>':'')+'<button id="pathway-begin" class="v2-button" type="button">Commencer les 8 questions</button></div>';
+ root.querySelector('#pathway-begin').addEventListener('click',()=>startEvaluation(stage));
+}
+function renderEvaluation(){
+ const q=questions[cursor];if(!q){finishEvaluation();return}
+ selectedAnswer=null;
+ root.innerHTML='<div class="pathway-eval"><a class="pathway-small" href="parcours.html?annee='+encodeURIComponent(activeStage.id)+'">← Quitter cette évaluation</a><div class="pathway-eval-count"><span>Question '+(cursor+1)+' / '+questions.length+'</span><span>'+esc(q.topic)+'</span></div><div class="pathway-meter"><span style="width:'+Math.round(cursor/questions.length*100)+'%"></span></div><h1>'+esc(q.question)+'</h1><div id="pathway-choices" class="pathway-choices">'+q.choices.map((answer,i)=>'<button type="button" class="pathway-choice" data-option="'+i+'" aria-pressed="false">'+esc(answer)+'</button>').join('')+'</div><button id="pathway-confirm" class="v2-button" disabled type="button">Valider et continuer</button><p class="pathway-small">Les explications apparaîtront au bilan pour éviter d’influencer les réponses suivantes.</p></div>';
+ root.querySelectorAll('[data-option]').forEach(button=>button.addEventListener('click',()=>{
+  selectedAnswer=Number(button.dataset.option);
+  root.querySelectorAll('[data-option]').forEach(b=>{const isSel=Number(b.dataset.option)===selectedAnswer;b.classList.toggle('selected',isSel);b.setAttribute('aria-pressed',String(isSel))});
+  root.querySelector('#pathway-confirm').disabled=false;
+ }));
+ root.querySelector('#pathway-confirm').addEventListener('click',()=>{
+  if(selectedAnswer===null)return;
+  answers.push({id:q.id,choice:selectedAnswer,correct:q.answer===selectedAnswer});
+  cursor++;renderEvaluation();
+ });
+}
+function finishEvaluation(){
+ const score=answers.filter(a=>a.correct).length,st=safeState(EXAM_KEY),prior=st[activeStage.id]||{};
+ const improved=!Number.isFinite(prior.bestScore)||score/questions.length>prior.bestScore/(prior.bestTotal||1);
+ st[activeStage.id]={attempts:(prior.attempts||0)+1,lastScore:score,lastTotal:questions.length,bestScore:improved?score:prior.bestScore,bestTotal:improved?questions.length:prior.bestTotal,updated:new Date().toISOString()};
+ const saved=saveState(EXAM_KEY,st);
+ const missed=answers.map((a,i)=>({a,q:questions[i]})).filter(x=>!x.a.correct);
+ root.innerHTML='<section class="pathway-eval-result"><span class="pill">Bilan personnel · '+esc(activeStage.label)+'</span><h1>Ton bilan transversal</h1><div class="pathway-big-score">'+score+' / '+questions.length+'</div><p>'+(score===questions.length?'Toutes les réponses proposées sont correctes sur cette tentative.':'Revois les explications ci-dessous pour identifier les notions à consolider.')+'</p><p class="pathway-small">'+(saved?'Résultat enregistré dans ce navigateur.':'Le résultat n’a pas pu être sauvegardé sur cet appareil.')+'</p>'+
+ (missed.length?'<details class="pathway-details" open><summary>Corriger mes '+missed.length+' réponses à consolider</summary><div class="pathway-reviews">'+missed.map(({a,q})=>'<article><span class="pill">'+esc(q.topic)+'</span><h2>'+esc(q.question)+'</h2><p><strong>Réponse attendue :</strong> '+esc(q.choices[q.answer])+'</p><p>'+esc(q.explanation)+'</p>'+(q.sourceUrl?'<a target="_blank" rel="noopener noreferrer" href="'+esc(q.sourceUrl)+'">Consulter la source</a>':'')+'</article>').join('')+'</div></details>':'<p>Tu peux revoir les cours ou faire une autre évaluation pour entretenir les acquis.</p>')+
+ '<div class="pathway-result-actions"><a class="v2-button" href="parcours.html?annee='+encodeURIComponent(activeStage.id)+'">Reprendre mon parcours</a><button class="v2-button secondary" id="pathway-retry" type="button">Refaire le bilan</button></div></section>';
+ root.querySelector('#pathway-retry').addEventListener('click',()=>startEvaluation(activeStage));
+}
+const evalId=params.get('evaluation'),evalStage=stageData.find(s=>s.id===evalId);
+if(evalStage)showEvaluationIntro(evalStage);else showStage();
+initNurseAvatar('parcours');
+</script></body>
+</html>

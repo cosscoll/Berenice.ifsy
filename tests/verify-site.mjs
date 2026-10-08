@@ -38,7 +38,7 @@ for(const f of fs.readdirSync(path.join(root,'assets')).filter(x=>x.endsWith('.j
  try{new vm.Script(read('assets/'+f),{filename:f})}catch(e){errors.push('assets/'+f+': '+e.message)}
 }
 const sandbox=vm.createContext({window:{},console});
-for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js','cases-data.js']){
+for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js','cases-data.js','pathway-data.js']){
  vm.runInContext(read('assets/'+f),sandbox,{filename:f});
 }
 const situations=sandbox.window.IFSI_CASES;
@@ -84,6 +84,28 @@ for(const caseStudy of situations){
   verify(step.options.every(o=>o.label&&o.why),'Justification manquante : '+caseStudy.id);
  }
 }
+const stages=sandbox.window.IFSI_PATHWAY;
+const chooseQuestions=vm.runInContext('ifsiChooseQuestions',sandbox);
+const allStageTopics=new Set(),stageIDs=new Set();
+for(const stage of stages){
+ verify(stage.id&&!stageIDs.has(stage.id),'Étape du parcours dupliquée ou sans ID : '+stage.id);stageIDs.add(stage.id);
+ verify(stage.level>=1&&stage.level<=3,'Niveau du parcours incorrect : '+stage.id);
+ for(const topicId of stage.topics){
+  verify(topicIds.has(topicId),'Cours du parcours absent : '+topicId);
+  verify(!allStageTopics.has(topicId),'Chapitre présent deux fois dans le parcours : '+topicId);
+  allStageTopics.add(topicId);
+ }
+ const group=stage.topics.map(id=>topics.find(t=>t.id===id)).filter(Boolean);
+ const questions=chooseQuestions(stage,topics,quiz,8,()=>0.42);
+ verify(questions.length===8,'Bilan transversal trop court : '+stage.id);
+ verify(new Set(questions.map(q=>q.id)).size===questions.length,'Question du bilan dupliquée : '+stage.id);
+ verify(new Set(questions.map(q=>q.topic)).size>=4,'Bilan pas assez transversal : '+stage.id);
+ verify(situations.filter(c=>c.level===stage.level).length>=3,'Cas pratiques insuffisants : '+stage.id);
+}
+verify(stages.length===3,'Le parcours doit compter trois étapes indicatives');
+verify(allStageTopics.size===topics.length,'Certains cours manquent dans le parcours');
+verify(fs.existsSync(path.join(root,'parcours.html')),'Page du parcours manquante');
+verify(fs.existsSync(path.join(root,'assets/pathway.css')),'Styles du parcours manquants');
 verify(fs.existsSync(path.join(root,'situations.html')),'Page des situations manquante');
 verify(fs.existsSync(path.join(root,'robots.txt')),'robots.txt manquant');
 verify(fs.existsSync(path.join(root,'sitemap.xml')),'sitemap.xml manquant');
@@ -93,5 +115,5 @@ if(errors.length){
  console.error(errors.map(e=>'✗ '+e).join('\n'));
  process.exitCode=1;
 }else{
- console.log('Contrôles OK : '+pages.length+' pages, '+topics.length+' thèmes, '+courses.length+' cours, '+quiz.length+' quiz, '+learning.length+' parcours courts, '+situations.length+' situations fictives.');
+ console.log('Contrôles OK : '+pages.length+' pages, '+topics.length+' thèmes, '+courses.length+' cours, '+quiz.length+' quiz, '+learning.length+' parcours courts, '+situations.length+' situations fictives, '+stages.length+' niveaux du parcours.');
 }
