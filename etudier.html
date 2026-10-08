@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Étudier — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/v2.css">
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="content-column">
+    <main>
+      <section class="hero-v2">
+        <h1>Qu’est-ce que tu veux travailler ?</h1>
+        <p>Choisis un domaine ou cherche directement un chapitre. Pour chaque sujet, ouvre le format qui te convient : révision, quiz, carte mentale ou apprentissage guidé.</p>
+      </section>
+
+      <div class="explorer-toolbar">
+        <input class="local-search" id="topic-search" type="search" placeholder="Rechercher : hygiène, cardio, médicaments…">
+      </div>
+      <div class="filter-chips" id="domain-filters"></div>
+
+      <div class="section-head">
+        <div><h2 id="topic-count">Chapitres</h2><p class="muted">Les actions indisponibles ne sont simplement pas affichées.</p></div>
+      </div>
+      <div class="topic-grid" id="topic-grid"></div>
+    </main>
+  </div>
+</div>
+
+<script src="assets/error-reporter.js"></script>
+<script src="assets/student.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/nav.js"></script>
+<script src="assets/study-topics.js"></script>
+<script src="assets/nurse-avatar.js"></script>
+<script>
+renderNav('etudier');
+const grid=document.getElementById('topic-grid');
+const input=document.getElementById('topic-search');
+const filters=document.getElementById('domain-filters');
+const params=new URLSearchParams(location.search);
+let activeDomain=params.get('domain')||'all';
+input.value=params.get('q')||'';
+
+function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+function renderFilters(){
+  const items=[['all','Tous'],...Object.entries(IFSI_DOMAINS).map(([k])=>[k,'Domaine '+k])];
+  filters.innerHTML=items.map(([id,label])=>'<button class="filter-chip '+(activeDomain===id?'active':'')+'" data-domain="'+id+'">'+label+'</button>').join('');
+  filters.querySelectorAll('button').forEach(b=>b.onclick=()=>{activeDomain=b.dataset.domain;renderFilters();renderTopics()});
+}
+function actions(t){
+  const a=[];
+  if(t.ue)a.push('<a class="v2-button secondary" href="revision.html?ue='+encodeURIComponent(t.ue)+'">Réviser</a>');
+  if(t.quizTopic)a.push('<a class="v2-button secondary" href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Quiz</a>');
+  if(t.mapId)a.push('<a class="v2-button secondary" href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Carte mentale</a>');
+  if(t.learningId)a.push('<a class="v2-button secondary" href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Apprendre</a>');
+  return a.join('');
+}
+function renderTopics(){
+  const q=norm(input.value.trim());
+  const hits=STUDY_TOPICS.filter(t=>(activeDomain==='all'||t.domain===activeDomain)&&(!q||norm(t.title+' '+t.keywords+' '+t.ue).includes(q)));
+  document.getElementById('topic-count').textContent=hits.length+' chapitre'+(hits.length>1?'s':'');
+  grid.innerHTML=hits.length?hits.map(t=>'<article class="topic-card"><span class="pill">Domaine '+t.domain+(t.ue?' • UE '+t.ue:'')+'</span><h3>'+t.title+'</h3><div class="topic-meta">'+IFSI_DOMAINS[t.domain]+'</div><div class="topic-actions">'+actions(t)+'</div></article>').join(''):'<div class="empty-note">Aucun chapitre ne correspond à cette recherche.</div>';
+}
+input.addEventListener('input',renderTopics);
+renderFilters();renderTopics();initNurseAvatar('etudier');
+</script>
+</body></html>
