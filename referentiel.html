@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Référentiel 2026 — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <div class="hero-v2">
+          <h1>Référentiel infirmier 2026</h1>
+          <p>La formation conduisant au diplôme d'État infirmier est organisée sur 6 semestres, 180 ECTS et 4 620 heures. Le diplôme s'acquiert par la validation de cinq domaines de compétences.</p>
+        </div>
+
+        <div class="v2-card">
+          <h2>Mon parcours</h2>
+          <div class="field-grid">
+            <label>Référentiel
+              <select id="ref-select">
+                <option value="2026">Entrée en formation à partir de septembre 2026</option>
+                <option value="legacy">Entrée en formation avant septembre 2026</option>
+              </select>
+            </label>
+            <label>Semestre
+              <select id="semester-select">
+                <option value="1">Semestre 1</option>
+                <option value="2">Semestre 2</option>
+                <option value="3">Semestre 3</option>
+                <option value="4">Semestre 4</option>
+                <option value="5">Semestre 5</option>
+                <option value="6">Semestre 6</option>
+              </select>
+            </label>
+          </div>
+          <p class="muted small" style="margin-bottom:0">Ce choix adapte le tableau de bord. L'ancien catalogue reste disponible séparément pour les étudiants relevant du référentiel antérieur.</p>
+        </div>
+
+        <h2 style="margin-top:28px">Les 5 domaines du référentiel 2026</h2>
+        <div class="domain-grid">
+          <article class="domain-card">
+            <span class="domain-code">A</span>
+            <h2>Sciences infirmières et raisonnement clinique</h2>
+            <p>Fondements théoriques et méthodes permettant d'analyser une situation et de prendre des décisions dans le champ infirmier.</p>
+          </article>
+          <article class="domain-card">
+            <span class="domain-code">B</span>
+            <h2>Pratiques cliniques infirmières, qualité et gestion des risques</h2>
+            <p>Organisation, réalisation et évaluation des soins, objectifs thérapeutiques, sécurité et amélioration continue de la qualité.</p>
+          </article>
+          <article class="domain-card">
+            <span class="domain-code">C</span>
+            <h2>Prévention et promotion de la santé</h2>
+            <p>Santé publique, prévention, santé environnementale, éducation et promotion de la santé individuelle, communautaire et populationnelle.</p>
+          </article>
+          <article class="domain-card">
+            <span class="domain-code">D</span>
+            <h2>Communication, travail en équipe et leadership</h2>
+            <p>Communication, collaboration, coordination des soins, travail pluriprofessionnel, accompagnement et professionnalisation.</p>
+          </article>
+          <article class="domain-card">
+            <span class="domain-code">E</span>
+            <h2>Démarche scientifique, initiation à la recherche et méthodologie</h2>
+            <p>Données probantes, lecture scientifique, méthodologie, amélioration des pratiques et accès à la littérature professionnelle.</p>
+          </article>
+        </div>
+
+        <div class="notice-v2">
+          <strong>Important :</strong> l'ancien écran « Catalogue UE » du site correspond à la nomenclature antérieure. Il est conservé pour ne pas perdre les fiches et contenus déjà créés, mais il n'est plus présenté comme le référentiel 2026.
+        </div>
+
+        <div class="v2-card">
+          <h2>Organisation générale</h2>
+          <div class="metric-grid">
+            <div class="metric"><strong>6</strong><span>semestres</span></div>
+            <div class="metric"><strong>180</strong><span>ECTS</span></div>
+            <div class="metric"><strong>4 620 h</strong><span>volume du parcours</span></div>
+            <div class="metric"><strong>66</strong><span>semaines de stage</span></div>
+          </div>
+          <p class="muted small">Source de référence : arrêté du 20 février 2026 relatif au diplôme d'État d'infirmier (Légifrance). Cette page synthétise l'organisation et ne remplace pas le texte réglementaire.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/v2-core.js"></script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>
+    renderNav('referentiel');
+    const profile = getTrainingProfile();
+    const refSelect = document.getElementById('ref-select');
+    const semesterSelect = document.getElementById('semester-select');
+    refSelect.value = profile.referential;
+    semesterSelect.value = String(profile.semester);
+
+    function persistProfile() {
+      const semester = Number(semesterSelect.value);
+      saveTrainingProfile({
+        referential: refSelect.value,
+        semester,
+        year: Math.ceil(semester / 2)
+      });
+    }
+    refSelect.addEventListener('change', persistProfile);
+    semesterSelect.addEventListener('change', persistProfile);
+    initNurseAvatar('referentiel');
+  </script>
+</body>
+</html>

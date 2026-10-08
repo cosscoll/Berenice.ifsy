@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Stage — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <div class="hero-v2">
+          <h1>Mon stage</h1>
+          <p>Prépare tes objectifs, garde des notes de terrain et transforme ce que tu observes en points de révision.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="v2-card">
+            <h2>Informations du stage</h2>
+            <div class="field-stack">
+              <label>Service / structure<input id="service" placeholder="Ex. médecine, EHPAD, urgences..." /></label>
+              <div class="field-grid">
+                <label>Début<input id="start" type="date" /></label>
+                <label>Fin<input id="end" type="date" /></label>
+              </div>
+            </div>
+          </section>
+
+          <section class="v2-card">
+            <h2>Préparation</h2>
+            <div class="daily-list">
+              <div class="daily-item"><span class="step">1</span><div>Identifier les pathologies fréquentes du service.</div></div>
+              <div class="daily-item"><span class="step">2</span><div>Repérer les médicaments et surveillances courantes.</div></div>
+              <div class="daily-item"><span class="step">3</span><div>Définir 3 à 5 objectifs observables.</div></div>
+            </div>
+          </section>
+        </div>
+
+        <section class="v2-card" style="margin-bottom:18px">
+          <h2>Mes objectifs</h2>
+          <div class="field-grid">
+            <label>Nouvel objectif<input id="objective-input" placeholder="Ex. réaliser une transmission structurée" /></label>
+            <div style="display:flex;align-items:end"><button class="v2-button" id="add-objective">Ajouter</button></div>
+          </div>
+          <div id="objectives"></div>
+        </section>
+
+        <section class="v2-card">
+          <h2>Notes de terrain</h2>
+          <div class="field-stack">
+            <label>Nouvelle note<textarea id="note-input" rows="4" placeholder="Situation observée, question, soin à revoir..."></textarea></label>
+            <div><button class="v2-button" id="add-note">Enregistrer la note</button></div>
+          </div>
+          <div id="notes" style="margin-top:14px"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/v2-core.js"></script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>
+    renderNav('stage');
+    let data = getStageData();
+
+    const service = document.getElementById('service');
+    const start = document.getElementById('start');
+    const end = document.getElementById('end');
+    service.value = data.service;
+    start.value = data.start;
+    end.value = data.end;
+
+    function persistHeader() {
+      data.service = service.value;
+      data.start = start.value;
+      data.end = end.value;
+      saveStageData(data);
+    }
+    [service, start, end].forEach((el) => el.addEventListener('change', persistHeader));
+    service.addEventListener('input', persistHeader);
+
+    function renderObjectives() {
+      document.getElementById('objectives').innerHTML = data.objectives.length
+        ? data.objectives.map((o, i) => `
+            <div class="objective-row ${o.done ? 'done' : ''}">
+              <label style="display:flex;gap:10px;align-items:flex-start">
+                <input type="checkbox" data-check="${i}" ${o.done ? 'checked' : ''}>
+                <span class="objective-text">${safeText(o.text)}</span>
+              </label>
+              <button class="mini-btn" data-delete="${i}">Supprimer</button>
+            </div>`).join('')
+        : '<p class="muted">Aucun objectif enregistré.</p>';
+
+      document.querySelectorAll('[data-check]').forEach((el) => el.addEventListener('change', () => {
+        data.objectives[Number(el.dataset.check)].done = el.checked;
+        saveStageData(data);
+        renderObjectives();
+      }));
+      document.querySelectorAll('[data-delete]').forEach((el) => el.addEventListener('click', () => {
+        data.objectives.splice(Number(el.dataset.delete), 1);
+        saveStageData(data);
+        renderObjectives();
+      }));
+    }
+
+    function renderNotes() {
+      document.getElementById('notes').innerHTML = data.notes.length
+        ? [...data.notes].reverse().map((n) => `<div class="objective-row"><div><strong>${safeText(n.date)}</strong><div>${safeText(n.text)}</div></div></div>`).join('')
+        : '<p class="muted">Aucune note enregistrée.</p>';
+    }
+
+    document.getElementById('add-objective').addEventListener('click', () => {
+      const input = document.getElementById('objective-input');
+      const text = input.value.trim();
+      if (!text) return;
+      data.objectives.push({ text, done: false });
+      input.value = '';
+      saveStageData(data);
+      renderObjectives();
+    });
+
+    document.getElementById('add-note').addEventListener('click', () => {
+      const input = document.getElementById('note-input');
+      const text = input.value.trim();
+      if (!text) return;
+      data.notes.push({ text, date: new Date().toLocaleDateString('fr-FR') });
+      input.value = '';
+      saveStageData(data);
+      renderNotes();
+    });
+
+    renderObjectives();
+    renderNotes();
+    initNurseAvatar('stage');
+  </script>
+</body>
+</html>

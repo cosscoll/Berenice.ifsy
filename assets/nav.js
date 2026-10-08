@@ -1,14 +1,18 @@
-/** Génère la barre de navigation latérale, identique sur toutes les pages. */
+/** Navigation principale — V2 */
 const NAV_ITEMS = [
-  { id: 'dashboard', href: 'index.html',           label: 'Tableau de bord', icon: 'dashboard' },
-  { id: 'ue',        href: 'ue.html',              label: 'Catalogue UE',    icon: 'book' },
-  { id: 'revision',  href: 'revision.html',        label: 'Révision',        icon: 'cards' },
+  { id: 'dashboard', href: 'index.html', label: 'Tableau de bord', icon: 'dashboard' },
+  { id: 'referentiel', href: 'referentiel.html', label: 'Référentiel 2026', icon: 'book' },
+  { id: 'ue', href: 'ue.html', label: 'Anciennes UE', icon: 'book' },
+  { id: 'revision', href: 'revision.html', label: 'Révision', icon: 'cards' },
+  { id: 'quiz', href: 'quiz.html', label: 'Quiz', icon: 'check' },
   { id: 'cartes-mentales', href: 'cartes-mentales.html', label: 'Cartes mentales', icon: 'map' },
-  { id: 'anatomie',  href: 'anatomie.html',        label: 'Anatomie',        icon: 'body' },
-  { id: 'ecos',      href: 'ecos.html',            label: 'Simulation ECOS', icon: 'patient' },
-  { id: 'ressources', href: 'ressources.html',      label: 'Ressources',      icon: 'link' },
-  { id: 'todo',      href: 'todo.html',            label: 'Mes tâches',      icon: 'check' },
-  { id: 'apprendre', href: 'apprendre.html',       label: 'Comment réviser', icon: 'lightbulb' },
+  { id: 'anatomie', href: 'anatomie.html', label: 'Anatomie', icon: 'body' },
+  { id: 'ecos', href: 'ecos.html', label: 'Simulation ECOS', icon: 'patient' },
+  { id: 'stage', href: 'stage.html', label: 'Stage', icon: 'patient' },
+  { id: 'calculs', href: 'calculs.html', label: 'Calculs infirmiers', icon: 'lightbulb' },
+  { id: 'ressources', href: 'ressources.html', label: 'Ressources', icon: 'link' },
+  { id: 'todo', href: 'todo.html', label: 'Mes tâches', icon: 'check' },
+  { id: 'apprendre', href: 'apprendre.html', label: 'Comment réviser', icon: 'lightbulb' },
 ];
 
 function renderNav(activeId) {
@@ -20,8 +24,8 @@ function renderNav(activeId) {
 
   document.getElementById('sidebar').innerHTML = `
     <div class="brand">IFSI Platform</div>
-    <div class="brand-sub">Version statique</div>
+    <div class="brand-sub">Parcours infirmier • V2</div>
     <nav class="nav-list">${items}</nav>
-    <div class="sidebar-footer">Vos données restent dans ce navigateur.</div>
+    <div class="sidebar-footer">Progression enregistrée dans ce navigateur.</div>
   `;
 }

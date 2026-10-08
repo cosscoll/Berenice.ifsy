@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Catalogue UE — Plateforme IFSI</title>
+  <title>Anciennes UE — Plateforme IFSI</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar"></aside>
     <div class="content-column">
       <main>
-        <h1>Catalogue UE</h1>
-        <p class="page-intro">
-          Référentiel infirmier 2026 (3 ans, 4620h). Les titres sont saisis ;
-          le contenu détaillé de cours reste à rédiger UE par UE.
-        </p>
+        <h1>Catalogue UE — référentiel antérieur</h1>
+        <div class="legacy-banner">
+          <strong>Cette nomenclature n'est pas le référentiel 2026.</strong>
+          <div style="margin-top:6px">Elle est conservée afin de ne pas perdre les fiches, cartes et révisions déjà construites sur les UE numérotées 1.1, 2.10, 4.3, etc. Pour une entrée en formation à partir de septembre 2026, utilise d'abord la page <a href="referentiel.html">Référentiel 2026</a>.</div>
+        </div>
         <div id="ue-container"></div>
       </main>
     </div>
@@ -28,7 +29,6 @@
   <script src="assets/data.js"></script>
   <script>
     renderNav('ue');
-
     const container = document.getElementById('ue-container');
     UE_CATALOGUE.forEach((bloc) => {
       const section = document.createElement('div');

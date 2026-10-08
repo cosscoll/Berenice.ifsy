@@ -5,104 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Tableau de bord — Plateforme IFSI</title>
   <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar"></aside>
     <div class="content-column">
       <main>
-        <h1 id="greeting">Bonjour</h1>
-        <p class="page-intro" id="encouragement"></p>
+        <section class="hero-v2">
+          <h1 id="greeting">Bonjour</h1>
+          <p id="encouragement"></p>
+          <div class="referential-meta">
+            <span class="pill" id="profile-ref">Référentiel 2026</span>
+            <span class="pill" id="profile-sem">Semestre 1</span>
+          </div>
+        </section>
 
-        <ul class="path-list" style="margin-top:8px;">
-          <li>
-            <a href="ue.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Catalogue UE</span>
-                <span class="path-desc">Les 59 unités d'enseignement du référentiel 2026</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="revision.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Révision</span>
-                <span class="path-desc">Fiches en répétition espacée, avec carte mentale</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="cartes-mentales.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Cartes mentales</span>
-                <span class="path-desc">Synthèses par grand chapitre, zoomables et téléchargeables</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="anatomie.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Anatomie</span>
-                <span class="path-desc">Vraies planches historiques + schémas par système</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="ecos.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Simulation ECOS</span>
-                <span class="path-desc">11 cas cliniques, auto-évaluation guidée</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="todo.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Mes tâches</span>
-                <span class="path-desc">Organise-toi, exporte ta liste en fichier texte</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="ressources.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Ressources</span>
-                <span class="path-desc">Sites de référence et vidéos pour approfondir</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-          <li>
-            <a href="apprendre.html">
-              <span class="icon-badge"></span>
-              <span>
-                <span class="path-title">Comment réviser</span>
-                <span class="path-desc">Méthodes de mémorisation basées sur la recherche</span>
-              </span>
-              <span class="chevron"></span>
-            </a>
-          </li>
-        </ul>
+        <section class="metric-grid">
+          <div class="metric"><strong id="due-count">0</strong><span>cartes dues aujourd'hui</span></div>
+          <div class="metric"><strong id="reviewed-count">0</strong><span>cartes déjà travaillées</span></div>
+          <div class="metric"><strong id="quiz-score">—</strong><span>dernier score quiz</span></div>
+          <div class="metric"><strong id="streak">0</strong><span>jours consécutifs</span></div>
+        </section>
 
-        <p class="muted" style="margin-top:32px;">
-          Une petite assistante t'attend en bas à droite de l'écran — clique
-          sur son icône pour un conseil rapide. Pas d'avatar IA côté
-          simulation ECOS en revanche : ça demanderait une clé API payante
-          et un serveur pour la protéger.
-        </p>
+        <section class="dashboard-grid">
+          <div class="v2-card">
+            <h2>Plan du jour</h2>
+            <p class="muted">Une session courte, active et régulière.</p>
+            <div class="daily-list">
+              <div class="daily-item"><span class="step">1</span><div><strong>Réactivation</strong><div class="muted" id="plan-revision">Réviser les cartes dues.</div></div></div>
+              <div class="daily-item"><span class="step">2</span><div><strong>Test</strong><div class="muted">Faire un quiz de 5 questions et lire les explications.</div></div></div>
+              <div class="daily-item"><span class="step">3</span><div><strong>Application</strong><div class="muted">Faire un cas ECOS ou un exercice de calcul.</div></div></div>
+            </div>
+            <div class="v2-actions">
+              <a class="v2-button" href="revision.html">Commencer les révisions</a>
+              <a class="v2-button secondary" href="quiz.html">Faire un quiz</a>
+            </div>
+          </div>
+
+          <div class="v2-card">
+            <h2>Parcours de formation</h2>
+            <p id="profile-copy" class="muted"></p>
+            <div class="v2-actions">
+              <a class="v2-button secondary" href="referentiel.html">Voir le référentiel</a>
+              <a class="v2-button secondary" href="stage.html">Préparer mon stage</a>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Travailler par objectif</h2>
+          <div class="tool-grid">
+            <a class="tool-card" href="referentiel.html" style="text-decoration:none;color:inherit">
+              <h2>Comprendre le programme</h2>
+              <p class="muted">Les 5 domaines du référentiel 2026 et l'organisation de la formation.</p>
+            </a>
+            <a class="tool-card" href="quiz.html" style="text-decoration:none;color:inherit">
+              <h2>Me tester</h2>
+              <p class="muted">Questions corrigées avec explication immédiate et suivi des scores.</p>
+            </a>
+            <a class="tool-card" href="calculs.html" style="text-decoration:none;color:inherit">
+              <h2>Calculs infirmiers</h2>
+              <p class="muted">Entraînement guidé aux calculs de dose et de débit.</p>
+            </a>
+            <a class="tool-card" href="stage.html" style="text-decoration:none;color:inherit">
+              <h2>Préparer un stage</h2>
+              <p class="muted">Service, objectifs personnels, suivi et notes de terrain.</p>
+            </a>
+            <a class="tool-card" href="ecos.html" style="text-decoration:none;color:inherit">
+              <h2>Raisonner en clinique</h2>
+              <p class="muted">Cas ECOS et auto-évaluation structurée.</p>
+            </a>
+            <a class="tool-card" href="anatomie.html" style="text-decoration:none;color:inherit">
+              <h2>Anatomie</h2>
+              <p class="muted">Planches, systèmes et mémorisation visuelle.</p>
+            </a>
+          </div>
+        </section>
       </main>
     </div>
   </div>
@@ -111,16 +90,33 @@
   <script src="assets/icons.js"></script>
   <script src="assets/nav.js"></script>
   <script src="assets/student.js"></script>
+  <script src="assets/data.js"></script>
+  <script src="assets/fsrs.js"></script>
+  <script src="assets/v2-core.js"></script>
   <script src="assets/nurse-avatar.js"></script>
   <script>
     renderNav('dashboard');
+    const profile = getTrainingProfile();
+    const due = getDueCards(FSRS_DECK);
+    const fsrsState = loadFsrsState();
+    const reviewed = Object.values(fsrsState).filter((x) => x && x.reps > 0).length;
+    const quizStats = getQuizStats();
+    const streakInfo = recordVisitAndGetStreakInfo();
 
     document.getElementById('greeting').textContent = `Bonjour ${STUDENT_NAME}`;
     document.getElementById('encouragement').textContent = randomEncouragement();
-
-    const icons = ['book', 'cards', 'map', 'body', 'patient', 'check', 'link', 'lightbulb'];
-    document.querySelectorAll('.icon-badge').forEach((el, i) => { el.innerHTML = ICONS[icons[i]]; });
-    document.querySelectorAll('.chevron').forEach((el) => { el.innerHTML = ICONS.chevron; });
+    document.getElementById('due-count').textContent = due.length;
+    document.getElementById('reviewed-count').textContent = reviewed;
+    document.getElementById('quiz-score').textContent = quizStats.lastScore === null ? '—' : `${quizStats.lastScore}%`;
+    document.getElementById('streak').textContent = streakInfo.streak;
+    document.getElementById('plan-revision').textContent = due.length
+      ? `${due.length} carte${due.length > 1 ? 's' : ''} à revoir aujourd'hui.`
+      : "Aucune carte due : choisis un chapitre en révision libre.";
+    document.getElementById('profile-ref').textContent = profile.referential === '2026' ? 'Référentiel 2026' : 'Référentiel antérieur';
+    document.getElementById('profile-sem').textContent = `Semestre ${profile.semester}`;
+    document.getElementById('profile-copy').textContent = profile.referential === '2026'
+      ? `Parcours 2026 • année ${profile.year} • semestre ${profile.semester}.`
+      : `Parcours antérieur à septembre 2026 • semestre ${profile.semester}.`;
 
     initNurseAvatar('dashboard');
   </script>

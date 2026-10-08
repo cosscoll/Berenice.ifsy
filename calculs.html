@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Calculs infirmiers — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <div class="hero-v2">
+          <h1>Calculs infirmiers</h1>
+          <p>Entraînement pédagogique aux proportions et débits. Toujours confronter un calcul réel aux protocoles, au dispositif utilisé et à la prescription.</p>
+        </div>
+
+        <div class="notice-v2"><strong>Entraînement uniquement.</strong> Les outils ci-dessous ne doivent pas être utilisés comme validation d'une administration réelle.</div>
+
+        <div class="tool-grid">
+          <section class="tool-card">
+            <h2>Volume à prélever</h2>
+            <div class="field-stack">
+              <label>Dose prescrite (mg)<input id="dose-prescribed" type="number" min="0" step="any"></label>
+              <label>Dose disponible (mg)<input id="dose-available" type="number" min="0" step="any"></label>
+              <label>Volume disponible (mL)<input id="volume-available" type="number" min="0" step="any"></label>
+            </div>
+            <div class="calc-result" id="dose-result">—</div>
+            <p class="muted small">Formule : dose prescrite ÷ dose disponible × volume disponible.</p>
+          </section>
+
+          <section class="tool-card">
+            <h2>Débit en mL/h</h2>
+            <div class="field-stack">
+              <label>Volume total (mL)<input id="flow-volume" type="number" min="0" step="any"></label>
+              <label>Durée (heures)<input id="flow-hours" type="number" min="0" step="any"></label>
+            </div>
+            <div class="calc-result" id="flow-result">—</div>
+            <p class="muted small">Formule : volume ÷ durée.</p>
+          </section>
+
+          <section class="tool-card">
+            <h2>Gouttes/minute</h2>
+            <div class="field-stack">
+              <label>Volume (mL)<input id="drop-volume" type="number" min="0" step="any"></label>
+              <label>Durée (heures)<input id="drop-hours" type="number" min="0" step="any"></label>
+              <label>Facteur de chute (gouttes/mL)<input id="drop-factor" type="number" min="1" step="any" value="20"></label>
+            </div>
+            <div class="calc-result" id="drop-result">—</div>
+            <p class="muted small">Le facteur de chute dépend du dispositif : vérifier le matériel utilisé.</p>
+          </section>
+        </div>
+
+        <section class="v2-card" style="margin-top:18px">
+          <h2>Exercice aléatoire</h2>
+          <p id="exercise"></p>
+          <div class="field-grid">
+            <label>Ta réponse<input id="exercise-answer" type="number" step="any"></label>
+            <div style="display:flex;align-items:end;gap:8px">
+              <button class="v2-button" id="check-exercise">Vérifier</button>
+              <button class="v2-button secondary" id="new-exercise">Nouvel exercice</button>
+            </div>
+          </div>
+          <div id="exercise-feedback"></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>
+    renderNav('calculs');
+
+    function n(id) { return Number(document.getElementById(id).value); }
+    function fmt(value) { return Number.isFinite(value) ? `${Math.round(value * 100) / 100}` : '—'; }
+
+    function updateDose() {
+      const prescribed = n('dose-prescribed'), available = n('dose-available'), volume = n('volume-available');
+      document.getElementById('dose-result').textContent = available > 0 && prescribed >= 0 && volume >= 0 ? `${fmt((prescribed / available) * volume)} mL` : '—';
+    }
+    function updateFlow() {
+      const volume = n('flow-volume'), hours = n('flow-hours');
+      document.getElementById('flow-result').textContent = hours > 0 && volume >= 0 ? `${fmt(volume / hours)} mL/h` : '—';
+    }
+    function updateDrops() {
+      const volume = n('drop-volume'), hours = n('drop-hours'), factor = n('drop-factor');
+      document.getElementById('drop-result').textContent = hours > 0 && volume >= 0 && factor > 0 ? `${fmt((volume * factor) / (hours * 60))} gouttes/min` : '—';
+    }
+
+    ['dose-prescribed','dose-available','volume-available'].forEach((id) => document.getElementById(id).addEventListener('input', updateDose));
+    ['flow-volume','flow-hours'].forEach((id) => document.getElementById(id).addEventListener('input', updateFlow));
+    ['drop-volume','drop-hours','drop-factor'].forEach((id) => document.getElementById(id).addEventListener('input', updateDrops));
+
+    let expected = 0;
+    function newExercise() {
+      const volumes = [250, 500, 1000];
+      const hours = [2, 4, 5, 8, 10];
+      const volume = volumes[Math.floor(Math.random() * volumes.length)];
+      const duration = hours[Math.floor(Math.random() * hours.length)];
+      expected = volume / duration;
+      document.getElementById('exercise').textContent = `Une perfusion de ${volume} mL doit être administrée en ${duration} heures. Quel débit moyen en mL/h ?`;
+      document.getElementById('exercise-answer').value = '';
+      document.getElementById('exercise-feedback').innerHTML = '';
+    }
+    document.getElementById('check-exercise').addEventListener('click', () => {
+      const answer = n('exercise-answer');
+      const ok = Math.abs(answer - expected) < 0.01;
+      document.getElementById('exercise-feedback').innerHTML = `<div class="explanation"><strong>${ok ? 'Correct.' : 'À revoir.'}</strong> ${fmt(expected)} mL/h, car volume ÷ durée = ${fmt(expected)}.</div>`;
+    });
+    document.getElementById('new-exercise').addEventListener('click', newExercise);
+    newExercise();
+    initNurseAvatar('calculs');
+  </script>
+</body>
+</html>

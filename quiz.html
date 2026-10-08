@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Quiz — Plateforme IFSI</title>
+  <link rel="stylesheet" href="assets/style.css" />
+  <link rel="stylesheet" href="assets/v2.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar"></aside>
+    <div class="content-column">
+      <main>
+        <div class="hero-v2">
+          <h1>Quiz actif</h1>
+          <p>Réponds avant de lire l'explication. Les résultats sont enregistrés localement pour suivre ta progression.</p>
+        </div>
+
+        <div class="v2-card" id="quiz-card">
+          <div class="field-grid" id="quiz-setup">
+            <label>Thème
+              <select id="topic-select"></select>
+            </label>
+            <label>Nombre de questions
+              <select id="count-select">
+                <option value="5">5 questions</option>
+                <option value="10">10 questions</option>
+                <option value="12">Toutes les questions</option>
+              </select>
+            </label>
+          </div>
+          <div class="v2-actions" id="setup-actions"><button class="v2-button" id="start-btn">Commencer</button></div>
+          <div id="quiz-area"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="assets/error-reporter.js"></script>
+  <script src="assets/student.js"></script>
+  <script src="assets/icons.js"></script>
+  <script src="assets/nav.js"></script>
+  <script src="assets/v2-core.js"></script>
+  <script src="assets/quiz-data.js"></script>
+  <script src="assets/nurse-avatar.js"></script>
+  <script>
+    renderNav('quiz');
+
+    let session = [];
+    let cursor = 0;
+    let correct = 0;
+    let locked = false;
+
+    const topics = ['Tous les thèmes', ...new Set(QUIZ_BANK.map((q) => q.topic))];
+    const topicSelect = document.getElementById('topic-select');
+    topicSelect.innerHTML = topics.map((t) => `<option value="${safeText(t)}">${safeText(t)}</option>`).join('');
+
+    function shuffled(list) {
+      return [...list].sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      const topic = topicSelect.value;
+      const count = Number(document.getElementById('count-select').value);
+      const pool = topic === 'Tous les thèmes' ? QUIZ_BANK : QUIZ_BANK.filter((q) => q.topic === topic);
+      session = shuffled(pool).slice(0, Math.min(count, pool.length));
+      cursor = 0;
+      correct = 0;
+      locked = false;
+      document.getElementById('quiz-setup').style.display = 'none';
+      document.getElementById('setup-actions').style.display = 'none';
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const area = document.getElementById('quiz-area');
+      if (cursor >= session.length) {
+        const pct = session.length ? Math.round((correct / session.length) * 100) : 0;
+        saveQuizSession(correct, session.length);
+        area.innerHTML = `
+          <div class="done-state">
+            <h1>${pct}%</h1>
+            <p>${correct} bonne${correct > 1 ? 's' : ''} réponse${correct > 1 ? 's' : ''} sur ${session.length}.</p>
+            <p class="muted">${pct >= 80 ? 'Très solide. Continue avec de la révision espacée.' : pct >= 60 ? 'Bonne base. Relis surtout les explications des erreurs.' : 'Session utile : les erreurs indiquent précisément quoi retravailler.'}</p>
+            <button class="v2-button" id="restart-btn">Nouveau quiz</button>
+          </div>`;
+        document.getElementById('restart-btn').addEventListener('click', () => {
+          document.getElementById('quiz-setup').style.display = 'grid';
+          document.getElementById('setup-actions').style.display = 'flex';
+          area.innerHTML = '';
+        });
+        return;
+      }
+
+      locked = false;
+      const q = session[cursor];
+      area.innerHTML = `
+        <div class="quiz-progress"><div style="width:${Math.round((cursor / session.length) * 100)}%"></div></div>
+        <span class="pill">${safeText(q.topic)}</span>
+        <div class="quiz-question">${safeText(q.question)}</div>
+        <div class="quiz-choices">
+          ${q.choices.map((choice, i) => `<button class="quiz-choice" data-i="${i}">${safeText(choice)}</button>`).join('')}
+        </div>
+        <div id="feedback"></div>
+      `;
+      document.querySelectorAll('.quiz-choice').forEach((btn) => {
+        btn.addEventListener('click', () => answer(Number(btn.dataset.i)));
+      });
+    }
+
+    function answer(index) {
+      if (locked) return;
+      locked = true;
+      const q = session[cursor];
+      if (index === q.answer) correct += 1;
+      document.querySelectorAll('.quiz-choice').forEach((btn) => {
+        const i = Number(btn.dataset.i);
+        btn.disabled = true;
+        if (i === q.answer) btn.classList.add('correct');
+        if (i === index && i !== q.answer) btn.classList.add('wrong');
+      });
+      document.getElementById('feedback').innerHTML = `
+        <div class="explanation"><strong>${index === q.answer ? 'Bonne réponse.' : 'À revoir.'}</strong><br>${safeText(q.explanation)}</div>
+        <div class="v2-actions"><button class="v2-button" id="next-btn">${cursor === session.length - 1 ? 'Voir le résultat' : 'Question suivante'}</button></div>
+      `;
+      document.getElementById('next-btn').addEventListener('click', () => { cursor += 1; renderQuestion(); });
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startQuiz);
+    initNurseAvatar('quiz');
+  </script>
+</body>
+</html>
