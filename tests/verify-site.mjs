@@ -38,9 +38,10 @@ for(const f of fs.readdirSync(path.join(root,'assets')).filter(x=>x.endsWith('.j
  try{new vm.Script(read('assets/'+f),{filename:f})}catch(e){errors.push('assets/'+f+': '+e.message)}
 }
 const sandbox=vm.createContext({window:{},console});
-for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js']){
+for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js','cases-data.js']){
  vm.runInContext(read('assets/'+f),sandbox,{filename:f});
 }
+const situations=sandbox.window.IFSI_CASES;
 const topics=sandbox.window.STUDY_TOPICS;
 const courses=vm.runInContext('IFSI_COURSES',sandbox);
 const quiz=vm.runInContext('QUIZ_BANK',sandbox);
@@ -69,6 +70,21 @@ for(const t of topics){
 for(const l of learning){
  verify(Array.isArray(l.steps)&&l.steps.length===5,'Module guidé incomplet : '+l.id);
 }
+const scenarioIds=new Set();
+for(const caseStudy of situations){
+ verify(!!caseStudy.id&&!scenarioIds.has(caseStudy.id),'Situation en double ou sans ID : '+caseStudy.id);scenarioIds.add(caseStudy.id);
+ verify(topicIds.has(caseStudy.topicId),'Situation sans chapitre : '+caseStudy.id);
+ verify(Number.isInteger(caseStudy.level)&&caseStudy.level>=1&&caseStudy.level<=3,'Niveau de situation incorrect : '+caseStudy.id);
+ verify(caseStudy.title&&caseStudy.objective&&caseStudy.intro&&caseStudy.debrief,'Situation incomplète : '+caseStudy.id);
+ verify(Array.isArray(caseStudy.steps)&&caseStudy.steps.length>=3,'Parcours trop court : '+caseStudy.id);
+ verify(Array.isArray(caseStudy.sources)&&caseStudy.sources.length>0&&caseStudy.sources.every(s=>/^https:\/\//.test(s.url)),'Sources de la situation manquantes : '+caseStudy.id);
+ for(const step of caseStudy.steps||[]){
+  verify(step.question&&Array.isArray(step.options)&&step.options.length>=2,'Étape incomplète : '+caseStudy.id);
+  verify(step.options.filter(o=>o.correct).length===1,'Il faut une seule réponse correcte par étape : '+caseStudy.id);
+  verify(step.options.every(o=>o.label&&o.why),'Justification manquante : '+caseStudy.id);
+ }
+}
+verify(fs.existsSync(path.join(root,'situations.html')),'Page des situations manquante');
 verify(fs.existsSync(path.join(root,'robots.txt')),'robots.txt manquant');
 verify(fs.existsSync(path.join(root,'sitemap.xml')),'sitemap.xml manquant');
 verify(fs.existsSync(path.join(root,'cours.html')),'Page des cours manquante');
@@ -77,5 +93,5 @@ if(errors.length){
  console.error(errors.map(e=>'✗ '+e).join('\n'));
  process.exitCode=1;
 }else{
- console.log('Contrôles OK : '+pages.length+' pages, '+topics.length+' thèmes, '+courses.length+' cours, '+quiz.length+' quiz, '+learning.length+' parcours courts.');
+ console.log('Contrôles OK : '+pages.length+' pages, '+topics.length+' thèmes, '+courses.length+' cours, '+quiz.length+' quiz, '+learning.length+' parcours courts, '+situations.length+' situations fictives.');
 }

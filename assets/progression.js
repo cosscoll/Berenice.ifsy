@@ -37,3 +37,19 @@ function getCourseStats(courses){
   });
   return {total:list.length,started,passed,completed};
 }
+
+/** Statistiques des situations pédagogiques enregistrées sur cet appareil. */
+function getSituationStats(scenarios) {
+  let state={};
+  try{state=JSON.parse(localStorage.getItem('ifsi_cases_progress_v1')||'{}')}catch(e){}
+  const list=Array.isArray(scenarios)?scenarios:[];
+  let completed=0,perfect=0,attempts=0,earned=0,possible=0;
+  for(const c of list){
+    const p=state[c.id];
+    if(!p||!Number.isFinite(p.lastScore))continue;
+    completed++;attempts+=Number(p.attempts)||0;
+    earned+=p.lastScore;possible+=c.steps.length;
+    if(p.bestScore===c.steps.length)perfect++;
+  }
+  return {total:list.length,completed,perfect,attempts,average:possible?Math.round(earned/possible*100):null};
+}

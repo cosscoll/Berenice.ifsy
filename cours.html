@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/v2.css">
-<link rel="stylesheet" data-ifsi-ux="course11" href="assets/ux.css?v=course11">
+<link rel="stylesheet" data-ifsi-ux="course11" href="assets/ux.css?v=cases13">
 </head>
 <body>
 <div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
@@ -22,9 +22,9 @@
 <script src="assets/error-reporter.js"></script>
 <script src="assets/icons.js"></script>
 <script src="assets/study-topics.js?v=course12"></script>
-<script src="assets/nav.js?v=course12"></script>
+<script src="assets/nav.js?v=cases13"></script>
 <script src="assets/v2-core.js"></script>
-<script src="assets/courses-data.js?v=course12"></script>
+<script src="assets/courses-data.js?v=course12"></script><script src="assets/cases-data.js?v=cases13"></script>
 <script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('etudier');
@@ -41,6 +41,8 @@ function sourceList(c){
 }
 function related(c){
  const topic=STUDY_TOPICS.find(t=>t.id===c.id),links=[];
+ const found=(window.IFSI_CASES||[]).filter(x=>x.topicId===c.id);
+ if(found.length)links.push('<a href="situations.html?id='+encodeURIComponent(found[0].id)+'">M’entraîner sur une situation fictive</a>');
  if(topic?.quizTopic)links.push('<a href="quiz.html?topic='+encodeURIComponent(topic.quizTopic)+'">Faire un quiz sur le thème</a>');
  if(topic?.mapId)links.push('<a href="cartes-mentales.html?id='+encodeURIComponent(topic.mapId)+'">Voir la carte mentale</a>');
  if(topic?.learningId)links.push('<a href="apprentissage.html?module='+encodeURIComponent(topic.learningId)+'">Parcours guidé court</a>');

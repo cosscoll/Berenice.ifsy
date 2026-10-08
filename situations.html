@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Situations cliniques fictives — IFSI Platform</title>
+<meta name="description" content="Entraînez votre raisonnement infirmier grâce à des cas pratiques progressifs, des corrections expliquées et des références professionnelles.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/situations.html">
+<meta property="og:type" content="website"><meta property="og:title" content="Cas pratiques infirmiers — IFSI Platform">
+<meta property="og:description" content="Situations fictives de révision IFSI : raisonner, décider et comprendre les corrections.">
+<link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="cases13" href="assets/ux.css?v=cases13">
+</head><body>
+<div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
+<div class="course-breadcrumb"><a href="etudier.html">Réviser</a><span aria-hidden="true">›</span><span>Cas pratiques</span></div>
+<div id="case-app" aria-live="polite"></div>
+</main></div></div>
+<script src="assets/error-reporter.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/nav.js?v=cases13"></script>
+<script src="assets/v2-core.js"></script>
+<script src="assets/cases-data.js?v=cases13"></script>
+<script src="assets/nurse-avatar.js"></script>
+<script>
+renderNav('situations');
+const CASE_KEY='ifsi_cases_progress_v1';
+const app=document.getElementById('case-app');
+const scenarios=window.IFSI_CASES||[];
+let active=null,stepIndex=0,answers=[],revealed=false,visibleOptions=[];
+const esc=safeText;
+function readState(){try{const x=JSON.parse(localStorage.getItem(CASE_KEY)||'{}');return x&&typeof x==='object'&&!Array.isArray(x)?x:{}}catch(e){return {}}}
+function saveState(st){try{localStorage.setItem(CASE_KEY,JSON.stringify(st));return true}catch(e){return false}}
+function progressFor(id){return readState()[id]||null}
+function levelName(n){return ['','Fondations','Analyse & transmissions','Coordination & recul'][n]||'Progression'}
+function sourceLinks(c){return c.sources.map(s=>'<li><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">'+esc(s.label)+'</a></li>').join('')}
+function shuffleChoices(options){
+ const a=options.map((opt,index)=>({...opt,index}));
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+ return a;
+}
+function showLibrary(){
+ active=null;history.replaceState(null,'','situations.html');
+ const state=readState(),untried=scenarios.filter(c=>!state[c.id]),next=untried[0]||scenarios[0];
+ const attempted=scenarios.filter(c=>!!state[c.id]).length;
+ app.innerHTML='<header class="case-hero"><span class="pill">Simulation pédagogique</span><h1>Entraîne ton raisonnement sur une situation</h1><p>Observe, choisis une réponse, puis découvre pourquoi elle est adaptée ou non. Chaque scénario est fictif et ne remplace pas une formation pratique.</p></header>'+
+ '<section class="case-feature"><div><span class="case-eyebrow">Pour commencer</span><h2>'+esc(next.title)+'</h2><p>'+esc(next.intro)+'</p><p class="muted small">'+esc(levelName(next.level))+' · '+next.duration+' min environ · '+next.steps.length+' décisions</p></div>'+
+ '<a class="v2-button" href="situations.html?id='+encodeURIComponent(next.id)+'">Commencer ce cas →</a></section>'+
+ '<p class="case-library-count">'+attempted+' / '+scenarios.length+' situations déjà réalisées sur ce navigateur.</p>'+
+ '<details class="case-catalog"><summary>Choisir une autre situation</summary><div class="case-catalog-content">'+
+ [1,2,3].map(level=>'<div class="case-level-group"><h2>Étape '+level+' — '+levelName(level)+'</h2><p class="muted small">Difficulté indicative, sans correspondance officielle avec un semestre.</p><div class="case-catalog-grid">'+scenarios.filter(c=>c.level===level).map(c=>{
+ const p=state[c.id];return '<a class="case-catalog-item" href="situations.html?id='+encodeURIComponent(c.id)+'"><strong>'+esc(c.title)+'</strong><span>'+esc(c.setting)+'</span>'+(p?'<small>Meilleur score : '+p.bestScore+'/'+c.steps.length+'</small>':'<small>Non commencé</small>')+'</a>'
+ }).join('')+'</div></div>').join('')+
+ '</div></details><p class="muted small">Ce contenu entraîne à reconnaître des situations et à communiquer. Il ne doit pas être utilisé pour décider d’un soin, d’une prescription ou d’une conduite thérapeutique réelle.</p>';
+}
+function openCase(id){
+ active=scenarios.find(c=>c.id===id)||null;
+ if(!active){showLibrary();return}
+ stepIndex=0;answers=[];revealed=false;visibleOptions=[];
+ history.replaceState(null,'','situations.html?id='+encodeURIComponent(active.id));
+ drawStep();
+}
+function drawStep(){
+ if(!active)return;
+ if(stepIndex>=active.steps.length){drawResult();return}
+ revealed=false;const step=active.steps[stepIndex];
+ visibleOptions=shuffleChoices(step.options);
+ app.innerHTML='<div class="case-topline"><a href="situations.html" id="case-exit">← Toutes les situations</a><span class="pill">'+esc(levelName(active.level))+'</span></div>'+
+ '<header class="case-intro"><span class="case-eyebrow">'+esc(active.setting)+'</span><h1>'+esc(active.title)+'</h1><p>'+esc(active.intro)+'</p><p class="case-objective"><strong>Objectif :</strong> '+esc(active.objective)+'</p></header>'+
+ '<div class="case-step-progress"><div style="width:'+Math.round(stepIndex/active.steps.length*100)+'%"></div></div>'+
+ '<section class="case-step-card"><span class="case-eyebrow">Décision '+(stepIndex+1)+' sur '+active.steps.length+'</span><h2>'+esc(step.question)+'</h2>'+
+ '<div class="case-choice-list" id="case-choices">'+visibleOptions.map((opt,i)=>'<button type="button" class="case-choice" data-i="'+i+'"><span>'+String.fromCharCode(65+i)+'</span><strong>'+esc(opt.label)+'</strong></button>').join('')+'</div>'+
+ '<div id="case-feedback" role="status" aria-live="polite"></div><button class="v2-button" id="case-next" type="button" hidden>'+(stepIndex===active.steps.length-1?'Voir mon bilan':'Décision suivante →')+'</button></section>'+
+ '<p class="case-safe-note">Exercice fictif. Aucune décision de soin réelle ne doit être fondée sur cette simulation.</p>';
+ document.getElementById('case-exit').addEventListener('click',e=>{e.preventDefault();showLibrary()});
+ document.querySelectorAll('.case-choice').forEach(btn=>btn.addEventListener('click',()=>choose(Number(btn.dataset.i))));
+ document.getElementById('case-next').addEventListener('click',()=>{stepIndex++;if(stepIndex===active.steps.length)drawResult();else drawStep()});
+}
+function choose(i){
+ if(revealed)return;
+ const picked=visibleOptions[i];if(!picked)return;
+ revealed=true;answers.push(!!picked.correct);
+ document.querySelectorAll('.case-choice').forEach((b,j)=>{b.disabled=true;if(visibleOptions[j].correct)b.classList.add('correct');if(j===i&&!picked.correct)b.classList.add('wrong')});
+ const feedback=document.getElementById('case-feedback');
+ feedback.innerHTML='<div class="case-feedback '+(picked.correct?'good':'review')+'"><strong>'+(picked.correct?'Bonne analyse.':'À approfondir.')+'</strong><p>'+esc(picked.why)+'</p>'+(picked.correct?'':'<p><strong>Réponse attendue :</strong> '+esc(visibleOptions.find(x=>x.correct).label)+'</p>')+'</div>';
+ document.getElementById('case-next').hidden=false;
+}
+function drawResult(){
+ const score=answers.filter(Boolean).length,n=active.steps.length,old=progressFor(active.id);
+ const state=readState();
+ state[active.id]={attempts:(old?.attempts||0)+1,lastScore:score,bestScore:Math.max(score,old?.bestScore||0),updated:new Date().toISOString()};
+ const saved=saveState(state);
+ app.innerHTML='<div class="case-result"><span class="pill">Situation terminée</span><h1>'+esc(active.title)+'</h1><div class="case-result-score">'+score+' / '+n+'</div><p>'+ (score===n?'Tu as identifié les choix attendus dans ce scénario.':'Tu as terminé le scénario. Les explications permettent de revoir les notions qui restent fragiles.')+'</p>'+
+ '<div class="case-debrief"><h2>Ce qu’il faut retenir</h2><p>'+esc(active.debrief)+'</p><ul>'+active.takeaways.map(s=>'<li>'+esc(s)+'</li>').join('')+'</ul></div>'+
+ '<div class="case-sources"><h2>Références</h2><ul>'+sourceLinks(active)+'</ul></div>'+
+ '<p class="muted small">'+(saved?'Résultat enregistré uniquement dans ce navigateur.':'Le navigateur n’a pas pu conserver ce résultat.')+'</p>'+
+ '<div class="case-result-actions"><button id="case-again" class="v2-button" type="button">Recommencer</button><a href="cours.html?id='+encodeURIComponent(active.topicId)+'" class="v2-button secondary">Revoir le cours</a><a href="situations.html" id="case-library" class="v2-button secondary">Autre situation</a></div></div>';
+ document.getElementById('case-again').onclick=()=>openCase(active.id);
+ document.getElementById('case-library').addEventListener('click',e=>{e.preventDefault();showLibrary()});
+}
+const requested=new URLSearchParams(location.search).get('id');if(requested&&scenarios.some(c=>c.id===requested))openCase(requested);else showLibrary();
+initNurseAvatar('situations');
+</script></body></html>

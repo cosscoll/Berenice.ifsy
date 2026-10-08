@@ -8,6 +8,7 @@ const HEADER_PRIMARY=[
 ];
 const HEADER_MORE=[
  {id:'anatomie',href:'anatomie.html',label:'Anatomie',icon:'body'},
+ {id:'situations',href:'situations.html',label:'Cas pratiques',icon:'patient'},
  {id:'ecos',href:'ecos.html',label:'ECOS',icon:'patient'},
  {id:'stage',href:'stage.html',label:'Stage',icon:'patient'},
  {id:'calculs',href:'calculs.html',label:'Calculs infirmiers',icon:'lightbulb'},
@@ -26,6 +27,7 @@ const SEARCH_BASE=[
  {label:'Cartes mentales',kind:'Page',href:'cartes-mentales.html',keywords:'mindmap synthèse visuelle'},
  {label:'Progression',kind:'Page',href:'progression.html',keywords:'statistiques résultats scores'},
  {label:'Anatomie',kind:'Page',href:'anatomie.html',keywords:'organe système corps'},
+ {label:'Cas pratiques',kind:'Page',href:'situations.html',keywords:'situations cliniques fictives simulation entrainement decisions raisonnement'},
  {label:'ECOS',kind:'Page',href:'ecos.html',keywords:'cas clinique simulation patient'},
  {label:'Calculs infirmiers',kind:'Page',href:'calculs.html',keywords:'dose débit perfusion'},
  {label:'Stage',kind:'Page',href:'stage.html',keywords:'terrain objectifs service'}
@@ -35,13 +37,13 @@ function iconFor(name){return window.ICONS&&ICONS[name]?ICONS[name]:''}
 function normSearch(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function ensureHeaderAssets(){
  if(!document.querySelector('link[data-ifsi-ux]')){
-  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=course11';l.dataset.ifsiUx='1';document.head.appendChild(l)
+  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=cases13';l.dataset.ifsiUx='1';document.head.appendChild(l)
  }
  if(!window.STUDY_TOPICS&&!document.querySelector('script[data-study-topics]')){
   const s=document.createElement('script');s.src='assets/study-topics.js?v=course12';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
  if(!document.querySelector('script[data-ifsi-chat]')){
-  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=course12';s.dataset.ifsiChat='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=cases13';s.dataset.ifsiChat='1';document.head.appendChild(s)
  }
 }
 function searchItems(query){
@@ -66,7 +68,14 @@ function buildHeader(activeId){
  if(placeholder)placeholder.remove();
 
  const primary=HEADER_PRIMARY.map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>').join('');
- const more=HEADER_MORE.map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>').join('');
+ const grouped=[
+  {heading:'S’entraîner',ids:['situations','anatomie','ecos','calculs','apprentissage']},
+  {heading:'Mon espace',ids:['stage','todo']},
+  {heading:'Ressources',ids:['bibliotheque','referentiel','ressources','methodologie','confidentialite']}
+ ];
+ const more=grouped.map(group=>'<div class="global-more-heading">'+group.heading+'</div>'+group.ids.map(id=>{
+  const i=HEADER_MORE.find(item=>item.id===id);return i?'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>':''
+ }).join('')).join('');
  const mobile=[...HEADER_PRIMARY,...HEADER_MORE].map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+i.label+'</a>').join('');
 
  const header=document.createElement('header');
@@ -78,7 +87,7 @@ function buildHeader(activeId){
    '<a class="global-brand" href="index.html"><span class="global-brand-mark">I</span><span class="global-brand-name">IFSI Platform</span></a>'+
    '<nav class="global-nav" aria-label="Navigation principale">'+primary+
     '<details class="global-more"><summary aria-label="Autres pages">Plus ▾</summary><div class="global-more-menu">'+
-     '<div class="global-more-heading">Apprentissage</div>'+
+     ''+
      more+
     '</div></details>'+
    '</nav>'+
