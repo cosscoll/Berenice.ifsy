@@ -61,6 +61,8 @@ for(const c of courses){
  verify(c.check.choices.length>=2&&c.check.answer>=0&&c.check.answer<c.check.choices.length,'Auto-évaluation incorrecte : '+c.id);
 }
 for(const t of topics){
+ verify(courseIds.has(t.id),'Chapitre sans cours : '+t.id);
+ verify(!!t.quizTopic,'Chapitre sans thème de quiz : '+t.id);
  if(t.quizTopic)verify(topicsWithQuiz.has(t.quizTopic),'Quiz introuvable pour '+t.id);
  if(t.learningId)verify(lessonIds.has(t.learningId),'Parcours guidé introuvable pour '+t.id);
 }

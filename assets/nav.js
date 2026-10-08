@@ -35,19 +35,19 @@ function iconFor(name){return window.ICONS&&ICONS[name]?ICONS[name]:''}
 function normSearch(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function ensureHeaderAssets(){
  if(!document.querySelector('link[data-ifsi-ux]')){
-  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=header8';l.dataset.ifsiUx='1';document.head.appendChild(l)
+  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=course11';l.dataset.ifsiUx='1';document.head.appendChild(l)
  }
  if(!window.STUDY_TOPICS&&!document.querySelector('script[data-study-topics]')){
-  const s=document.createElement('script');s.src='assets/study-topics.js?v=content9';s.dataset.studyTopics='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/study-topics.js?v=course12';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
  if(!document.querySelector('script[data-ifsi-chat]')){
-  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=header8';s.dataset.ifsiChat='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=course12';s.dataset.ifsiChat='1';document.head.appendChild(s)
  }
 }
 function searchItems(query){
  const q=normSearch(query).trim();if(q.length<2)return[];
  const topics=(window.STUDY_TOPICS||[]).map(t=>({
-  label:t.title,kind:'Chapitre',href:'etudier.html?q='+encodeURIComponent(t.title),
+  label:t.title,kind:'Chapitre',href:'cours.html?id='+encodeURIComponent(t.id),
   keywords:(t.keywords||'')+' '+(t.ue||'')+' domaine '+t.domain
  }));
  return [...topics,...SEARCH_BASE].filter(x=>normSearch(x.label+' '+x.keywords).includes(q)).slice(0,10)

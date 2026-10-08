@@ -7,7 +7,7 @@
     const s=document.createElement('script');s.src=src;s.setAttribute(marker,'1');document.head.appendChild(s);
   }
   function ensureData(){
-    addScript('assets/study-topics.js','data-chat-topics');
+    addScript('assets/study-topics.js?v=course12','data-chat-topics');
     addScript('assets/clinical-library.js','data-chat-clinical');
   }
   function build(){
@@ -38,6 +38,7 @@
   }
   function topicLinks(t){
     const links=[];
+    links.push('<a href="cours.html?id='+encodeURIComponent(t.id)+'">Lire le cours</a>');
     if(t.ue)links.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">Réviser les fiches</a>');
     if(t.quizTopic)links.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Faire le quiz</a>');
     if(t.mapId)links.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Voir la carte mentale</a>');
