@@ -134,3 +134,11 @@ main{max-width:1080px;margin:0 auto;padding:34px 28px 80px}
  .global-nav>a,.global-more>summary{padding:9px 9px}
  .global-search-box{max-width:310px}
 }
+
+/* Pied de page informatif — SEO, transparence et confidentialité */
+.content-column{min-height:calc(100vh - var(--header-h));display:flex;flex-direction:column;min-width:0}
+.content-column main{width:100%;flex:1}
+.ifsi-site-footer{margin-top:auto;border-top:1px solid var(--line);background:#fff}
+.ifsi-site-footer-inner{max-width:1250px;margin:0 auto;padding:16px 24px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;color:var(--ink-soft);font-size:12px}
+.ifsi-site-footer nav{display:flex;flex-wrap:wrap;gap:16px}
+.ifsi-site-footer a{color:var(--pine);text-decoration:underline;text-underline-offset:2px}

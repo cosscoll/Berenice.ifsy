@@ -15,9 +15,12 @@ window.STUDY_TOPICS = [
  {id:'biologie',title:'Biologie & valeurs usuelles',domain:'A',ue:'2.1',mapId:'biologie',quizTopic:null,learningId:null,keywords:'ionogramme sodium potassium créatinine glycémie'},
  {id:'administration',title:'Voies d’administration & calculs de dose',domain:'B',ue:'2.11',mapId:'administration',quizTopic:'Calculs',learningId:null,keywords:'IV IM SC débit dilution dose calcul'},
  {id:'consentement',title:'Droits du patient & consentement',domain:'D',ue:'1.3',mapId:null,quizTopic:'Éthique',learningId:'consentement',keywords:'droit éthique consentement information patient'},
- {id:'prevention',title:'Prévention & promotion de la santé',domain:'C',ue:'4.6',mapId:null,quizTopic:null,learningId:null,keywords:'prévention ETP santé publique éducation'},
- {id:'communication',title:'Communication & transmissions',domain:'D',ue:'3.3',mapId:null,quizTopic:'Communication',learningId:null,keywords:'transmission équipe coordination communication'},
- {id:'recherche',title:'Recherche & données probantes',domain:'E',ue:'3.4',mapId:null,quizTopic:null,learningId:null,keywords:'recherche article scientifique EBP méthodologie'}
+ {id:'prevention',title:'Prévention & promotion de la santé',domain:'C',ue:'4.6',mapId:null,quizTopic:'Prévention',learningId:'prevention-sante',keywords:'prévention ETP santé publique éducation'},
+ {id:'communication',title:'Communication & transmissions',domain:'D',ue:'3.3',mapId:null,quizTopic:'Communication',learningId:'transmissions',keywords:'transmission équipe coordination communication'},
+ {id:'recherche',title:'Recherche & données probantes',domain:'E',ue:'3.4',mapId:null,quizTopic:'Recherche',learningId:'recherche-evidence',keywords:'recherche article scientifique EBP méthodologie'},
+ {id:'environnement',title:'Santé environnementale',domain:'C',ue:null,mapId:null,quizTopic:'Prévention',learningId:'sante-environnementale',keywords:'environnement écoresponsable soins préventifs santé travail'},
+ {id:'equipe',title:'Collaboration et travail en équipe',domain:'D',ue:null,mapId:null,quizTopic:'Communication',learningId:'travail-equipe',keywords:'coordination équipe leadership organisation'},
+ {id:'lecture-science',title:'Lecture scientifique & sources',domain:'E',ue:null,mapId:null,quizTopic:'Recherche',learningId:'lecture-scientifique',keywords:'article anglais méthodologie données probantes recherche'}
 ];
 window.IFSI_DOMAINS = {
  A:'Sciences infirmières & raisonnement clinique',

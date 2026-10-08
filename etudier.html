@@ -1,5 +1,16 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Réviser — IFSI</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=header8"></head>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Réviser les cours IFSI par domaine et chapitre</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=seo9">
+  <meta name="description" content="Explorez les thèmes de révision en soins infirmiers par domaine, puis accédez aux fiches, cartes mentales et quiz associés.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/etudier.html">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="IFSI Platform">
+  <meta property="og:title" content="Réviser les cours IFSI par domaine et chapitre">
+  <meta property="og:description" content="Explorez les thèmes de révision en soins infirmiers par domaine, puis accédez aux fiches, cartes mentales et quiz associés.">
+  <meta property="og:url" content="https://cosscoll.github.io/Berenice.ifsy/etudier.html">
+  <meta name="twitter:card" content="summary">
+</head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
 <section class="study-library-head">
   <div><h1>Réviser</h1><p class="muted">Choisis un domaine ou recherche directement un chapitre.</p></div>
@@ -7,18 +18,19 @@
 
 <input class="page-search" id="study-search" type="search" placeholder="Rechercher un chapitre : hygiène, cardio, diabète…">
 <div class="study-filter-row" id="study-filters" style="margin-top:14px"></div>
-<div id="study-content"></div>
+<p class="muted small" style="margin:10px 0">Le classement par domaines est un repère de révision indicatif. Les fiches UE numérotées proviennent de l’ancien programme et ne couvrent pas à elles seules le référentiel 2026. <a href="methodologie.html">Comprendre les sources et limites.</a></p><div id="study-content"></div>
 </main></div></div>
 
-<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js"></script><script src="assets/nav.js?v=header8"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js?v=seo9"></script><script src="assets/v2-core.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('etudier');
 const input=document.getElementById('study-search'),filters=document.getElementById('study-filters'),content=document.getElementById('study-content');
+const trainingProfile=getTrainingProfile(),isLegacy=trainingProfile.referential==='legacy';
 const params=new URLSearchParams(location.search);let domain=params.get('domain')||'all';input.value=params.get('q')||'';
 function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function links(t){
  const a=[];
- if(t.ue)a.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">Fiches</a>');
+ if(t.ue)a.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">'+(isLegacy?'Fiches UE':'Fiches historiques')+'</a>');
  if(t.quizTopic)a.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Quiz</a>');
  if(t.mapId)a.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Carte mentale</a>');
  if(t.learningId)a.push('<a href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Cours guidé</a>');
@@ -29,7 +41,7 @@ function renderFilters(){
  filters.innerHTML=all.map(([k,l])=>'<button class="study-filter '+(domain===k?'active':'')+'" data-domain="'+k+'">'+l+'</button>').join('');
  filters.querySelectorAll('[data-domain]').forEach(b=>b.onclick=()=>{domain=b.dataset.domain;renderFilters();render()})
 }
-function topicCard(t){return '<article class="study-topic"><span class="pill">Domaine '+t.domain+(t.ue?' • UE '+t.ue:'')+'</span><h3>'+t.title+'</h3><p>'+IFSI_DOMAINS[t.domain]+'</p><div class="study-topic-actions">'+links(t)+'</div></article>'}
+function topicCard(t){return '<article class="study-topic"><span class="pill">Domaine '+t.domain+(t.ue&&isLegacy?' • ancienne UE '+t.ue:'')+'</span><h3>'+t.title+'</h3><p>'+IFSI_DOMAINS[t.domain]+'</p><div class="study-topic-actions">'+links(t)+'</div></article>'}
 function render(){
  const q=norm(input.value.trim());
  const hits=STUDY_TOPICS.filter(t=>(domain==='all'||t.domain===domain)&&(!q||norm(t.title+' '+t.keywords+' '+t.ue).includes(q)));

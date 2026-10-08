@@ -15,7 +15,9 @@ const HEADER_MORE=[
  {id:'bibliotheque',href:'bibliotheque.html',label:'Bibliothèque',icon:'link'},
  {id:'referentiel',href:'referentiel.html',label:'Référentiel 2026',icon:'book'},
  {id:'ressources',href:'ressources.html',label:'Ressources',icon:'link'},
- {id:'todo',href:'todo.html',label:'Mes tâches',icon:'check'}
+ {id:'todo',href:'todo.html',label:'Mes tâches',icon:'check'},
+ {id:'methodologie',href:'methodologie.html',label:'Sources & méthode',icon:'book'},
+ {id:'confidentialite',href:'confidentialite.html',label:'Confidentialité',icon:'link'}
 ];
 const SEARCH_BASE=[
  {label:'Accueil',kind:'Page',href:'index.html',keywords:'accueil tableau de bord'},
@@ -36,7 +38,7 @@ function ensureHeaderAssets(){
   const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=header8';l.dataset.ifsiUx='1';document.head.appendChild(l)
  }
  if(!window.STUDY_TOPICS&&!document.querySelector('script[data-study-topics]')){
-  const s=document.createElement('script');s.src='assets/study-topics.js';s.dataset.studyTopics='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/study-topics.js?v=content9';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
  if(!document.querySelector('script[data-ifsi-chat]')){
   const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=header8';s.dataset.ifsiChat='1';document.head.appendChild(s)
@@ -135,4 +137,17 @@ function buildHeader(activeId){
   })
  }
 }
-function renderNav(activeId){ensureHeaderAssets();buildHeader(activeId)}
+
+function renderNav(activeId){
+ ensureHeaderAssets();
+ buildHeader(activeId);
+ const column=document.querySelector('.content-column');
+ if(column&&!document.getElementById('ifsi-site-footer')){
+  const footer=document.createElement('footer');
+  footer.id='ifsi-site-footer';
+  footer.className='ifsi-site-footer';
+  footer.innerHTML='<div class="ifsi-site-footer-inner"><span>IFSI Platform · Version bêta · Support d’étude, non destiné aux décisions de soin.</span><nav aria-label="Informations du site"><a href="methodologie.html">Sources & méthode</a><a href="confidentialite.html">Confidentialité</a><a href="referentiel.html">Référentiel 2026</a></nav></div>';
+  column.appendChild(footer);
+ }
+}
+
