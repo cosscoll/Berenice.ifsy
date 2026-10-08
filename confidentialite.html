@@ -13,7 +13,30 @@
 <h2>Chatbot</h2>
 <p>L’assistant actuel est local : il recherche dans les contenus présents sur le site. Il ne se substitue pas à un professionnel de santé et ne permet pas de transmettre de données de patients.</p>
 <h2>Supprimer mes données</h2>
-<p>Vous pouvez effacer les données du site depuis les paramètres de stockage de votre navigateur. Cette suppression est irréversible. Une fonction d’export/suppression simplifiée pourra être ajoutée avant un lancement public.</p>
+<p>Vous pouvez effacer les données du site depuis les paramètres de stockage de votre navigateur. Cette suppression est irréversible. Vous pouvez également exporter puis effacer les données enregistrées par cette plateforme avec les commandes ci-dessous.</p>
+<div class="notice-v2"><strong>Gérer mes données locales</strong><p>Ces actions concernent uniquement ce navigateur. Le fichier exporté peut contenir des notes personnelles : conservez-le dans un endroit sûr.</p><p id="local-data-count" aria-live="polite"></p><div class="v2-actions"><button type="button" id="export-local" class="v2-button secondary">Exporter mes données</button><button type="button" id="erase-local" class="v2-button secondary">Effacer mes données</button></div><p id="local-data-status" role="status" aria-live="polite"></p></div>
 <p><a href="index.html">Retour à l’accueil</a> · <a href="methodologie.html">Méthodologie pédagogique</a></p>
 </article></main></div></div>
-<script src="assets/icons.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/nurse-avatar.js"></script><script>renderNav('confidentialite');initNurseAvatar('confidentialite');</script></body></html>
+<script src="assets/icons.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/nurse-avatar.js"></script><script>
+renderNav('confidentialite');initNurseAvatar('confidentialite');
+const keys=()=>Object.keys(localStorage).filter(key=>key.startsWith('ifsi_')).sort();
+const count=document.getElementById('local-data-count');
+const status=document.getElementById('local-data-status');
+function refresh(){const n=keys().length;count.textContent=n+' élément'+(n>1?'s':'')+' de stockage local actuellement enregistré'+(n>1?'s':'')+'.'}
+document.getElementById('export-local').addEventListener('click',()=>{
+ try{
+  const data={};keys().forEach(k=>{data[k]=localStorage.getItem(k)});
+  const file=new Blob([JSON.stringify({source:'IFSI Platform',date:new Date().toISOString(),data},null,2)],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(file);const link=document.createElement('a');
+  link.href=url;link.download='ifsi-donnees-locales.json';document.body.appendChild(link);link.click();link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  status.textContent='Fichier exporté. Conservez-le dans un espace personnel sécurisé.';
+ }catch(e){status.textContent='Export impossible dans ce navigateur.'}
+});
+document.getElementById('erase-local').addEventListener('click',()=>{
+ if(prompt('Cette action efface les données locales IFSI de ce navigateur (progression, notes et objectifs). Tapez SUPPRIMER pour confirmer :')!=='SUPPRIMER')return;
+ try{keys().forEach(k=>localStorage.removeItem(k));refresh();status.textContent='Données locales IFSI effacées.'}
+ catch(e){status.textContent='Suppression impossible : vérifiez les paramètres du navigateur.'}
+});
+refresh();
+</script></body></html>
