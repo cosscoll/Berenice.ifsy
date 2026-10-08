@@ -1,74 +1,34 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Révision — IFSI</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
-<section class="hero-v2"><h1>Réviser</h1><p>Commence par les cartes dues ou choisis immédiatement le chapitre que tu veux travailler.</p></section>
-
-<div class="mode-tabs" id="mode-tabs">
-  <button class="mode-tab active" data-mode="due">À revoir aujourd’hui</button>
-  <button class="mode-tab" data-mode="all">Toutes les fiches</button>
-  <button class="mode-tab" data-mode="chapter">Choisir un chapitre</button>
-</div>
-
-<section id="chapter-picker" style="display:none">
-  <div class="explorer-toolbar"><input id="chapter-search" class="local-search" type="search" placeholder="Rechercher un chapitre ou une notion…"></div>
-  <div id="chapter-grid" class="topic-grid"></div>
+<section class="simple-page-head">
+  <h1 id="session-title">Révision du jour</h1>
+  <p class="muted" id="session-subtitle">On te montre directement la prochaine carte.</p>
+  <a class="subtle-link" href="etudier.html">Changer de chapitre</a>
 </section>
-
-<div id="selection-summary" class="notice-v2" style="display:none"></div>
 <div id="revision-area"></div>
 </main></div></div>
-
-<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js"></script><script src="assets/student.js"></script><script src="assets/data.js"></script><script src="assets/fsrs.js"></script><script src="assets/simple-mindmap.js"></script><script src="assets/v2-core.js"></script><script src="assets/study-topics.js"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js"></script><script src="assets/student.js"></script><script src="assets/data.js"></script><script src="assets/fsrs.js"></script><script src="assets/simple-mindmap.js"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('revision');
-let queue=[],sessionTotal=0,revealed=false,currentMode='due',selectedUe=null;
-const area=document.getElementById('revision-area'),picker=document.getElementById('chapter-picker'),summary=document.getElementById('selection-summary');
-
-function ueTitle(code){for(const bloc of UE_CATALOGUE){const f=bloc.ues.find(u=>u.id===code);if(f)return f.titre}return ''}
-function setModeButton(mode){document.querySelectorAll('.mode-tab').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode))}
-function startSession(mode,ue){
-  currentMode=mode;selectedUe=ue||null;revealed=false;
-  if(mode==='due')queue=getDueCards(FSRS_DECK);
-  else if(mode==='all')queue=[...FSRS_DECK];
-  else queue=FSRS_DECK.filter(c=>c.ue===ue);
-  sessionTotal=queue.length;
-  picker.style.display=mode==='chapter'?'block':'none';
-  setModeButton(mode==='chapter'?'chapter':mode);
-  summary.style.display=(mode==='chapter'&&ue)?'block':'none';
-  if(mode==='chapter'&&ue){
-    const topic=STUDY_TOPICS.find(t=>t.ue===ue);
-    summary.innerHTML='<strong>UE '+ue+' — '+ueTitle(ue)+'</strong><div class="topic-actions" style="margin-top:8px">'+
-      (topic&&topic.quizTopic?'<a class="v2-button secondary" href="quiz.html?topic='+encodeURIComponent(topic.quizTopic)+'">Faire le quiz</a>':'')+
-      (topic&&topic.mapId?'<a class="v2-button secondary" href="cartes-mentales.html?id='+topic.mapId+'">Voir la carte mentale</a>':'')+'</div>';
-    history.replaceState(null,'','revision.html?ue='+encodeURIComponent(ue));
-  } else if(mode!=='chapter') history.replaceState(null,'','revision.html');
-  render();
-}
-function renderChapters(){
-  const q=(document.getElementById('chapter-search').value||'').toLowerCase();
-  const counts={};FSRS_DECK.forEach(c=>counts[c.ue]=(counts[c.ue]||0)+1);
-  const codes=Object.keys(counts).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
-  const hits=codes.filter(code=>(code+' '+ueTitle(code)+' '+FSRS_DECK.filter(c=>c.ue===code).map(c=>c.concept).join(' ')).toLowerCase().includes(q));
-  document.getElementById('chapter-grid').innerHTML=hits.map(code=>'<button class="topic-card '+(selectedUe===code?'selected':'')+'" data-ue="'+code+'" style="text-align:left;cursor:pointer"><span class="pill">UE '+code+'</span><h3>'+ueTitle(code)+'</h3><div class="topic-meta">'+counts[code]+' fiche'+(counts[code]>1?'s':'')+'</div></button>').join('')||'<div class="empty-note">Aucun chapitre trouvé.</div>';
-  document.querySelectorAll('[data-ue]').forEach(b=>b.onclick=()=>{startSession('chapter',b.dataset.ue);renderChapters()});
+const requestedUe=new URLSearchParams(location.search).get('ue');
+let queue=requestedUe?FSRS_DECK.filter(c=>c.ue===requestedUe):getDueCards(FSRS_DECK);
+const total=queue.length;let revealed=false;const area=document.getElementById('revision-area');
+function ueTitle(code){for(const b of UE_CATALOGUE){const f=b.ues.find(u=>u.id===code);if(f)return f.titre}return ''}
+if(requestedUe){
+ document.getElementById('session-title').textContent='UE '+requestedUe+' — '+ueTitle(requestedUe);
+ document.getElementById('session-subtitle').textContent=total+' fiche'+(total>1?'s':'')+' dans ce chapitre.';
 }
 function render(){
-  if(sessionTotal===0){
-    area.innerHTML='<div class="done-state"><h1>'+(currentMode==='due'?'Tout est à jour':'Aucune fiche ici')+'</h1><p class="muted">'+(currentMode==='due'?'Choisis un chapitre pour continuer à t’entraîner.':'Sélectionne un autre chapitre.')+'</p><a class="v2-button" href="etudier.html">Choisir un chapitre</a></div>';return;
-  }
-  if(queue.length===0){
-    area.innerHTML='<div class="done-state"><h1>Session terminée</h1><p class="muted">Tu as parcouru les '+sessionTotal+' fiches de cette session.</p><div class="v2-actions" style="justify-content:center"><a class="v2-button" href="etudier.html">Changer de chapitre</a><a class="v2-button secondary" href="quiz.html">Faire un quiz</a></div></div>';return;
-  }
-  const current=queue[0],done=sessionTotal-queue.length,pct=Math.round(done/sessionTotal*100);
-  area.innerHTML='<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="progress-label">'+done+' / '+sessionTotal+' cartes traitées</p>'+
-  '<div class="study-card"><span class="ue-tag">UE '+current.ue+' — '+current.concept+'</span><p class="front">'+current.front+'</p>'+
-  (revealed?'<div class="back-reveal">'+current.back+'</div><h3 style="margin-top:24px;text-align:left">Carte mentale</h3><div id="mindmap-wrap" style="text-align:left;margin-top:8px"></div><div class="rating-bar"><button class="rate-again" data-rating="1">À revoir<span class="key">1</span></button><button class="rate-hard" data-rating="2">Difficile<span class="key">2</span></button><button class="rate-good" data-rating="3">Bien<span class="key">3</span></button><button class="rate-easy" data-rating="4">Facile<span class="key">4</span></button></div>':'<button class="primary reveal-btn" id="reveal-btn">Révéler la réponse <span class="key">Espace</span></button>')+'</div>';
-  if(revealed){try{renderMindmapInto(document.getElementById('mindmap-wrap'),current.md,{height:320,title:current.concept})}catch(e){}document.querySelectorAll('[data-rating]').forEach(b=>b.onclick=()=>rate(current.id,Number(b.dataset.rating)))}else document.getElementById('reveal-btn').onclick=()=>{revealed=true;render()}
+ if(!queue.length){
+  area.innerHTML='<div class="done-state"><h1>'+(total?'Session terminée':'Rien à réviser ici')+'</h1><p class="muted">'+(total?'Tu as parcouru toutes les fiches de cette session.':'Aucune fiche disponible pour cette sélection.')+'</p><a class="v2-button" href="etudier.html">Choisir un chapitre</a></div>';return
+ }
+ const c=queue[0],done=total-queue.length,pct=total?Math.round(done/total*100):0;
+ area.innerHTML='<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="progress-label">'+done+' / '+total+'</p><div class="study-card"><span class="ue-tag">UE '+c.ue+' — '+c.concept+'</span><p class="front">'+c.front+'</p>'+
+ (revealed?'<div class="back-reveal">'+c.back+'</div><div id="mindmap-wrap" style="text-align:left;margin-top:18px"></div><div class="rating-bar"><button class="rate-again" data-rating="1">À revoir</button><button class="rate-hard" data-rating="2">Difficile</button><button class="rate-good" data-rating="3">Bien</button><button class="rate-easy" data-rating="4">Facile</button></div>':'<button class="primary reveal-btn" id="reveal">Voir la réponse</button>')+'</div>';
+ if(revealed){try{renderMindmapInto(document.getElementById('mindmap-wrap'),c.md,{height:300,title:c.concept})}catch(e){}document.querySelectorAll('[data-rating]').forEach(b=>b.onclick=()=>rate(c.id,Number(b.dataset.rating)))}else document.getElementById('reveal').onclick=()=>{revealed=true;render()}
 }
-function rate(id,rating){reviewCard(id,rating);queue.shift();revealed=false;render()}
-document.querySelectorAll('.mode-tab').forEach(b=>b.onclick=()=>{if(b.dataset.mode==='chapter'){currentMode='chapter';picker.style.display='block';setModeButton('chapter');summary.style.display=selectedUe?'block':'none';renderChapters();if(!selectedUe)area.innerHTML='<div class="empty-note">Choisis un chapitre ci-dessus pour démarrer.</div>'}else startSession(b.dataset.mode)});
-document.getElementById('chapter-search').addEventListener('input',renderChapters);
+function rate(id,r){reviewCard(id,r);queue.shift();revealed=false;render()}
 document.addEventListener('keydown',e=>{if(!revealed&&e.code==='Space'&&queue.length){e.preventDefault();revealed=true;render()}else if(revealed&&['1','2','3','4'].includes(e.key)&&queue.length)rate(queue[0].id,Number(e.key))});
-const requested=new URLSearchParams(location.search).get('ue');if(requested){currentMode='chapter';selectedUe=requested;picker.style.display='block';renderChapters();startSession('chapter',requested);renderChapters()}else startSession('due');
-initNurseAvatar('revision');
+render();initNurseAvatar('revision');
 </script></body></html>

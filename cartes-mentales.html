@@ -1,31 +1,47 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Cartes mentales — IFSI</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
-<section class="hero-v2"><h1>Cartes mentales</h1><p>Recherche un chapitre, sélectionne-le et affiche immédiatement sa synthèse visuelle.</p></section>
-<div class="map-layout">
-  <section class="v2-card">
-    <input class="local-search" id="map-search" type="search" placeholder="Rechercher une carte mentale…">
-    <div class="map-list" id="map-list" style="margin-top:12px"></div>
-  </section>
-  <section id="map-area"></section>
-</div>
+<section class="simple-page-head"><h1>Cartes mentales</h1><p class="muted">Tape ce que tu cherches. On n’affiche pas toute la bibliothèque tant que tu ne la demandes pas.</p></section>
+
+<section class="map-picker">
+  <input class="chapter-search" id="map-search" type="search" placeholder="Ex. diabète, cardio, hygiène…">
+  <div class="map-suggestions" id="map-suggestions"></div>
+
+  <details class="disclosure" id="all-maps">
+    <summary>Parcourir toutes les cartes mentales</summary>
+    <div class="disclosure-body"><div class="theme-list" id="all-map-list"></div></div>
+  </details>
+
+  <div class="map-current" id="map-area"></div>
+</section>
 </main></div></div>
 
 <script src="assets/error-reporter.js"></script><script src="assets/student.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js"></script><script src="assets/chapter-maps.js"></script><script src="assets/simple-mindmap.js"></script><script src="assets/study-topics.js"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('cartes-mentales');
-const search=document.getElementById('map-search'),list=document.getElementById('map-list'),area=document.getElementById('map-area');
-let active=new URLSearchParams(location.search).get('id')||CHAPTER_MAPS[0].id;
+const KEY='ifsi_last_mindmap_v1',search=document.getElementById('map-search'),suggestions=document.getElementById('map-suggestions'),allList=document.getElementById('all-map-list'),area=document.getElementById('map-area');
+let active=new URLSearchParams(location.search).get('id')||localStorage.getItem(KEY)||null;
 function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
-function renderList(){
- const q=norm(search.value);const hits=CHAPTER_MAPS.filter(c=>!q||norm(c.titre+' '+c.ue+' '+c.md).includes(q));
- list.innerHTML=hits.map(c=>'<button class="'+(c.id===active?'active':'')+'" data-id="'+c.id+'"><strong>'+c.titre+'</strong><br><span class="muted">'+c.ue+'</span></button>').join('')||'<div class="empty-note">Aucune carte mentale trouvée.</div>';
- list.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>{active=b.dataset.id;history.replaceState(null,'','cartes-mentales.html?id='+encodeURIComponent(active));renderList();renderMap()})
+function selectMap(id){active=id;localStorage.setItem(KEY,id);history.replaceState(null,'','cartes-mentales.html?id='+encodeURIComponent(id));renderMap();renderAll()}
+function renderSearch(){
+ const q=norm(search.value.trim());
+ if(!q){suggestions.innerHTML=active?'<button class="theme-row" data-id="'+active+'"><span>Reprendre ma dernière carte</span><span>→</span></button>':'<div class="empty-note">Commence à taper le nom d’un chapitre.</div>'}
+ else{
+  const hits=CHAPTER_MAPS.filter(c=>norm(c.titre+' '+c.ue+' '+c.md).includes(q)).slice(0,6);
+  suggestions.innerHTML=hits.length?hits.map(c=>'<button class="theme-row" data-id="'+c.id+'"><span><strong>'+c.titre+'</strong><br><small class="muted">'+c.ue+'</small></span><span>→</span></button>').join(''):'<div class="empty-note">Aucune carte trouvée.</div>'
+ }
+ suggestions.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>selectMap(b.dataset.id))
+}
+function renderAll(){
+ allList.innerHTML=CHAPTER_MAPS.map(c=>'<button class="theme-row '+(active===c.id?'selected':'')+'" data-id="'+c.id+'"><span>'+c.titre+'</span><span class="muted">'+c.ue+'</span></button>').join('');
+ allList.querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>selectMap(b.dataset.id))
 }
 function renderMap(){
- const c=CHAPTER_MAPS.find(x=>x.id===active)||CHAPTER_MAPS[0],topic=STUDY_TOPICS.find(t=>t.mapId===c.id);
- area.innerHTML='<div class="study-card" style="text-align:left;max-width:none"><span class="ue-tag">'+c.ue+'</span><h2 style="margin-top:8px">'+c.titre+'</h2><div class="topic-actions" style="margin:10px 0 14px">'+(topic&&topic.ue?'<a class="v2-button secondary" href="revision.html?ue='+encodeURIComponent(topic.ue)+'">Réviser ce chapitre</a>':'')+(topic&&topic.quizTopic?'<a class="v2-button secondary" href="quiz.html?topic='+encodeURIComponent(topic.quizTopic)+'">Faire le quiz</a>':'')+'</div><p class="muted small">Glisse pour déplacer, molette pour zoomer, ⤢ pour agrandir, ⬇ pour télécharger.</p><div id="chapter-mindmap-wrap"></div></div>';
- try{renderMindmapInto(document.getElementById('chapter-mindmap-wrap'),c.md,{height:560,title:c.titre})}catch(e){document.getElementById('chapter-mindmap-wrap').innerHTML='<div class="empty-note">Carte mentale indisponible.</div>'}
+ if(!active){area.innerHTML='';return}
+ const c=CHAPTER_MAPS.find(x=>x.id===active);if(!c){active=null;area.innerHTML='';return}
+ const topic=STUDY_TOPICS.find(t=>t.mapId===c.id);
+ area.innerHTML='<div class="study-card" style="text-align:left;max-width:none"><span class="ue-tag">'+c.ue+'</span><h2 style="margin-top:8px">'+c.titre+'</h2><div id="chapter-mindmap-wrap" style="margin-top:12px"></div><details class="alt-methods"><summary>Continuer sur ce chapitre</summary><div class="alt-method-links">'+(topic&&topic.ue?'<a href="revision.html?ue='+encodeURIComponent(topic.ue)+'">Réviser les fiches</a>':'')+(topic&&topic.quizTopic?'<a href="quiz.html?topic='+encodeURIComponent(topic.quizTopic)+'">Faire le quiz</a>':'')+'</div></details></div>';
+ try{renderMindmapInto(document.getElementById('chapter-mindmap-wrap'),c.md,{height:520,title:c.titre})}catch(e){document.getElementById('chapter-mindmap-wrap').innerHTML='<div class="empty-note">Carte indisponible.</div>'}
 }
-search.addEventListener('input',renderList);renderList();renderMap();initNurseAvatar('cartes-mentales');
+search.addEventListener('input',renderSearch);renderSearch();renderAll();renderMap();initNurseAvatar('cartes-mentales');
 </script></body></html>
