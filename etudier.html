@@ -1,73 +1,46 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Réviser — IFSI</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
-<div class="wizard">
-  <div class="wizard-progress"><span class="wizard-dot active" data-dot="1"></span><span class="wizard-dot" data-dot="2"></span><span class="wizard-dot" data-dot="3"></span></div>
+<section class="study-library-head">
+  <div><h1>Réviser</h1><p class="muted">Choisis un domaine ou recherche directement un chapitre.</p></div>
+</section>
 
-  <section class="wizard-step active" id="step-1">
-    <div class="wizard-head"><h1>Qu’est-ce que tu veux réviser ?</h1><p class="muted">Choisis un domaine. Rien d’autre pour l’instant.</p></div>
-    <input class="chapter-search" id="quick-search" type="search" placeholder="Ou tape directement une notion…">
-    <div class="wizard-options" id="domain-options"></div>
-  </section>
-
-  <section class="wizard-step" id="step-2">
-    <button class="wizard-back" id="back-domain">← Changer de domaine</button>
-    <div class="wizard-head"><h1 id="chapter-title">Choisis un chapitre</h1><p class="muted" id="chapter-subtitle"></p></div>
-    <input class="chapter-search" id="chapter-search" type="search" placeholder="Filtrer les chapitres…">
-    <div class="wizard-options" id="chapter-options"></div>
-  </section>
-
-  <section class="wizard-step" id="step-3">
-    <button class="wizard-back" id="back-chapter">← Changer de chapitre</button>
-    <div class="start-card" id="start-card"></div>
-  </section>
-</div>
+<input class="page-search" id="study-search" type="search" placeholder="Rechercher un chapitre : hygiène, cardio, diabète…">
+<div class="study-filter-row" id="study-filters" style="margin-top:14px"></div>
+<div id="study-content"></div>
 </main></div></div>
-<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js"></script><script src="assets/nav.js"></script><script src="assets/data.js"></script><script src="assets/nurse-avatar.js"></script>
+
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js"></script><script src="assets/nav.js"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('etudier');
-const domainOptions=document.getElementById('domain-options'),chapterOptions=document.getElementById('chapter-options');
-let selectedDomain=null,selectedTopic=null,searchMode=false;
-
+const input=document.getElementById('study-search'),filters=document.getElementById('study-filters'),content=document.getElementById('study-content');
+const params=new URLSearchParams(location.search);let domain=params.get('domain')||'all';input.value=params.get('q')||'';
 function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
-function gotoStep(n){document.querySelectorAll('.wizard-step').forEach((s,i)=>s.classList.toggle('active',i===n-1));document.querySelectorAll('.wizard-dot').forEach((d,i)=>d.classList.toggle('active',i<n))}
-function renderDomains(){
- domainOptions.innerHTML=Object.entries(IFSI_DOMAINS).map(([k,v])=>'<button class="wizard-choice" data-domain="'+k+'"><div><strong>Domaine '+k+'</strong><span>'+v+'</span></div><b>→</b></button>').join('');
- domainOptions.querySelectorAll('[data-domain]').forEach(b=>b.onclick=()=>{selectedDomain=b.dataset.domain;searchMode=false;renderChapters();gotoStep(2)})
+function links(t){
+ const a=[];
+ if(t.ue)a.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">Fiches</a>');
+ if(t.quizTopic)a.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Quiz</a>');
+ if(t.mapId)a.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Carte mentale</a>');
+ if(t.learningId)a.push('<a href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Cours guidé</a>');
+ return a.join('')
 }
-function topicMatches(q){return STUDY_TOPICS.filter(t=>norm(t.title+' '+t.keywords+' '+t.ue).includes(norm(q)))}
-function renderChapters(list){
- const q=document.getElementById('chapter-search').value.trim();
- let hits=list||STUDY_TOPICS.filter(t=>t.domain===selectedDomain);
- if(q)hits=hits.filter(t=>norm(t.title+' '+t.keywords+' '+t.ue).includes(norm(q)));
- document.getElementById('chapter-title').textContent=searchMode?'Résultats de recherche':'Choisis un chapitre';
- document.getElementById('chapter-subtitle').textContent=searchMode?'Seulement les résultats correspondant à ta recherche.':IFSI_DOMAINS[selectedDomain]||'';
- chapterOptions.innerHTML=hits.length?hits.map(t=>'<button class="wizard-choice" data-topic="'+t.id+'"><div><strong>'+t.title+'</strong><span>'+(t.ue?'UE '+t.ue+' • ':'')+'Domaine '+t.domain+'</span></div><b>→</b></button>').join(''):'<div class="empty-note">Aucun chapitre trouvé.</div>';
- chapterOptions.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>{selectedTopic=STUDY_TOPICS.find(t=>t.id===b.dataset.topic);renderStart();gotoStep(3)})
+function renderFilters(){
+ const all=[['all','Tous'],...Object.keys(IFSI_DOMAINS).map(k=>[k,'Domaine '+k])];
+ filters.innerHTML=all.map(([k,l])=>'<button class="study-filter '+(domain===k?'active':'')+'" data-domain="'+k+'">'+l+'</button>').join('');
+ filters.querySelectorAll('[data-domain]').forEach(b=>b.onclick=()=>{domain=b.dataset.domain;renderFilters();render()})
 }
-function cardsFor(t){return t.ue?FSRS_DECK.filter(c=>c.ue===t.ue).length:0}
-function hrefs(t){
- const options=[];
- if(t.learningId)options.push({label:'Apprendre ce chapitre',href:'apprentissage.html?module='+encodeURIComponent(t.learningId),priority:1});
- if(cardsFor(t))options.push({label:'Réviser les fiches',href:'revision.html?ue='+encodeURIComponent(t.ue),priority:2});
- if(t.quizTopic)options.push({label:'Faire un quiz',href:'quiz.html?topic='+encodeURIComponent(t.quizTopic),priority:3});
- if(t.mapId)options.push({label:'Voir la carte mentale',href:'cartes-mentales.html?id='+encodeURIComponent(t.mapId),priority:4});
- return options.sort((a,b)=>a.priority-b.priority)
+function topicCard(t){return '<article class="study-topic"><span class="pill">Domaine '+t.domain+(t.ue?' • UE '+t.ue:'')+'</span><h3>'+t.title+'</h3><p>'+IFSI_DOMAINS[t.domain]+'</p><div class="study-topic-actions">'+links(t)+'</div></article>'}
+function render(){
+ const q=norm(input.value.trim());
+ const hits=STUDY_TOPICS.filter(t=>(domain==='all'||t.domain===domain)&&(!q||norm(t.title+' '+t.keywords+' '+t.ue).includes(q)));
+ if(q||domain!=='all'){
+   content.innerHTML=hits.length?'<div class="study-section"><div class="study-list">'+hits.map(topicCard).join('')+'</div></div>':'<div class="empty-note">Aucun chapitre trouvé.</div>';
+   return
+ }
+ content.innerHTML=Object.entries(IFSI_DOMAINS).map(([k,label])=>{
+   const topics=STUDY_TOPICS.filter(t=>t.domain===k);
+   return '<section class="study-section"><div class="study-section-title"><span class="study-domain-badge">'+k+'</span><div><h2>'+label+'</h2><span class="muted">'+topics.length+' chapitre'+(topics.length>1?'s':'')+'</span></div></div><div class="study-list">'+topics.map(topicCard).join('')+'</div></section>'
+ }).join('')
 }
-function renderStart(){
- const t=selectedTopic,opts=hrefs(t),main=opts[0];
- document.getElementById('start-card').innerHTML='<span class="pill">Domaine '+t.domain+(t.ue?' • UE '+t.ue:'')+'</span><h2>'+t.title+'</h2><p class="muted">On te propose le point de départ le plus utile pour ce chapitre.</p>'+
- (main?'<a class="main-start" href="'+main.href+'">'+main.label+' →</a>':'<a class="main-start" href="bibliotheque.html">Rechercher ce sujet →</a>')+
- (opts.length>1?'<details class="alt-methods"><summary>Autres façons de travailler ce chapitre</summary><div class="alt-method-links">'+opts.slice(1).map(o=>'<a href="'+o.href+'">'+o.label+'</a>').join('')+'</div></details>':'');
-}
-document.getElementById('quick-search').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){searchMode=true;selectedDomain=null;document.getElementById('chapter-search').value='';renderChapters(topicMatches(e.target.value.trim()));gotoStep(2)}});
-document.getElementById('quick-search').addEventListener('input',e=>{if(e.target.value.trim().length>=2){searchMode=true;selectedDomain=null;document.getElementById('chapter-search').value='';renderChapters(topicMatches(e.target.value.trim()));gotoStep(2)}});
-document.getElementById('chapter-search').addEventListener('input',()=>renderChapters(searchMode?topicMatches(document.getElementById('quick-search').value):null));
-document.getElementById('back-domain').onclick=()=>{searchMode=false;selectedDomain=null;document.getElementById('quick-search').value='';document.getElementById('chapter-search').value='';gotoStep(1)};
-document.getElementById('back-chapter').onclick=()=>gotoStep(2);
-const params=new URLSearchParams(location.search),q=params.get('q'),domain=params.get('domain');
-renderDomains();
-if(q){document.getElementById('quick-search').value=q;searchMode=true;renderChapters(topicMatches(q));gotoStep(2)}
-else if(domain&&IFSI_DOMAINS[domain]){selectedDomain=domain;renderChapters();gotoStep(2)}
-initNurseAvatar('etudier');
+input.addEventListener('input',render);renderFilters();render();initNurseAvatar('etudier');
 </script></body></html>

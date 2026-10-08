@@ -1,61 +1,42 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Accueil — IFSI</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
-<section class="home-focus">
+<section class="hero-v2">
   <h1 id="greeting">Bonjour</h1>
-  <p id="encouragement" class="muted"></p>
+  <p id="encouragement"></p>
 </section>
 
-<a class="primary-task" id="primary-task" href="revision.html">
-  <div class="eyebrow">Recommandé maintenant</div>
-  <h2 id="primary-title">Continuer mes révisions</h2>
-  <p id="primary-copy">Reprendre là où tu en es sans rien choisir.</p>
-</a>
+<section class="dashboard-grid">
+  <article class="v2-card">
+    <span class="pill">Aujourd’hui</span>
+    <h2 style="margin-top:10px" id="today-title">Révisions du jour</h2>
+    <p class="muted" id="today-copy"></p>
+    <div class="v2-actions"><a class="v2-button" id="today-link" href="revision.html">Commencer</a></div>
+  </article>
+  <article class="v2-card">
+    <h2>Accès rapides</h2>
+    <div class="daily-list">
+      <a class="daily-item" href="etudier.html" style="text-decoration:none;color:inherit"><span class="step">1</span><div><strong>Réviser un chapitre</strong><div class="muted">Domaines, chapitres et formats disponibles.</div></div></a>
+      <a class="daily-item" href="quiz.html" style="text-decoration:none;color:inherit"><span class="step">2</span><div><strong>Faire un quiz</strong><div class="muted">Session rapide ou thème précis.</div></div></a>
+      <a class="daily-item" href="cartes-mentales.html" style="text-decoration:none;color:inherit"><span class="step">3</span><div><strong>Cartes mentales</strong><div class="muted">Synthèses visuelles par chapitre.</div></div></a>
+    </div>
+  </article>
+</section>
 
-<div class="home-search">
-  <span class="magnify">⌕</span>
-  <input id="home-search" type="search" placeholder="Je cherche un chapitre ou une notion…">
-  <div class="home-search-results" id="home-results"></div>
-</div>
-
-<div class="home-secondary">
-  <a href="etudier.html">Choisir un chapitre</a>
-  <a href="quiz.html">Faire un quiz rapide</a>
-  <a href="cartes-mentales.html">Voir une carte mentale</a>
-</div>
-
-<div class="mini-progress">
-  <span><strong id="due-count">0</strong><br>à revoir</span>
-  <span><strong id="quiz-score">—</strong><br>dernier quiz</span>
-  <span><strong id="streak">0</strong><br>jours de suite</span>
-</div>
+<section class="metric-grid">
+  <div class="metric"><strong id="due-count">0</strong><span>cartes à revoir</span></div>
+  <div class="metric"><strong id="reviewed-count">0</strong><span>fiches travaillées</span></div>
+  <div class="metric"><strong id="quiz-score">—</strong><span>dernier quiz</span></div>
+  <div class="metric"><strong id="streak">0</strong><span>jours de suite</span></div>
+</section>
 </main></div></div>
 <script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js"></script><script src="assets/nav.js"></script><script src="assets/student.js"></script><script src="assets/data.js"></script><script src="assets/fsrs.js"></script><script src="assets/v2-core.js"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('dashboard');
-const due=getDueCards(FSRS_DECK),quiz=getQuizStats(),streak=recordVisitAndGetStreakInfo();
-document.getElementById('greeting').textContent='Bonjour '+STUDENT_NAME;
-document.getElementById('encouragement').textContent=randomEncouragement();
-document.getElementById('due-count').textContent=due.length;
-document.getElementById('quiz-score').textContent=quiz.lastScore===null?'—':quiz.lastScore+'%';
-document.getElementById('streak').textContent=streak.streak;
-if(due.length){
- document.getElementById('primary-title').textContent='Réviser mes '+due.length+' carte'+(due.length>1?'s':'')+' du jour';
- document.getElementById('primary-copy').textContent='La plateforme a déjà préparé ce que tu dois revoir.';
-}else{
- const a=document.getElementById('primary-task');a.href='etudier.html';
- document.getElementById('primary-title').textContent='Choisir ce que je révise';
- document.getElementById('primary-copy').textContent='Aucune carte due aujourd’hui. Choisis simplement un domaine puis un chapitre.';
-}
-const input=document.getElementById('home-search'),box=document.getElementById('home-results');
-function renderHomeSearch(){
- const hits=searchItems(input.value);
- if(!hits.length){box.classList.remove('open');box.innerHTML='';return}
- box.innerHTML=hits.map(x=>'<a class="search-result" href="'+x.href+'"><span><strong>'+x.label+'</strong><small>'+x.kind+'</small></span><span>→</span></a>').join('');
- box.classList.add('open');
-}
-input.addEventListener('input',renderHomeSearch);
-input.addEventListener('keydown',e=>{if(e.key==='Enter'&&input.value.trim())location.href='etudier.html?q='+encodeURIComponent(input.value.trim())});
-document.addEventListener('click',e=>{if(!e.target.closest('.home-search'))box.classList.remove('open')});
+const due=getDueCards(FSRS_DECK),state=loadFsrsState(),reviewed=Object.values(state).filter(x=>x&&x.reps>0).length,quiz=getQuizStats(),streak=recordVisitAndGetStreakInfo();
+document.getElementById('greeting').textContent='Bonjour '+STUDENT_NAME;document.getElementById('encouragement').textContent=randomEncouragement();
+document.getElementById('due-count').textContent=due.length;document.getElementById('reviewed-count').textContent=reviewed;document.getElementById('quiz-score').textContent=quiz.lastScore===null?'—':quiz.lastScore+'%';document.getElementById('streak').textContent=streak.streak;
+if(due.length){document.getElementById('today-copy').textContent=due.length+' carte'+(due.length>1?'s':'')+' sont prêtes à être revues.'}
+else{document.getElementById('today-title').textContent='Tout est à jour';document.getElementById('today-copy').textContent='Aucune carte due. Tu peux choisir un chapitre librement.';document.getElementById('today-link').href='etudier.html';document.getElementById('today-link').textContent='Choisir un chapitre'}
 initNurseAvatar('dashboard');
 </script></body></html>
