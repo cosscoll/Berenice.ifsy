@@ -22,3 +22,18 @@ function getStageStats() {
   const done=s.objectives.filter(o=>o.done).length;
   return {total,done,notes:s.notes.length};
 }
+
+/** Progrès des cours longs, conservés séparément des quiz et flashcards. */
+function getCourseStats(courses){
+  let state={};
+  try{state=JSON.parse(localStorage.getItem('ifsi_course_progress_v1')||'{}')}catch(e){}
+  const list=Array.isArray(courses)?courses:[];
+  let completed=0,started=0,passed=0;
+  list.forEach(c=>{
+    const p=state[c.id];if(!p)return;
+    if(p.read||p.passed)started++;
+    if(p.passed)passed++;
+    if(p.read&&p.passed)completed++;
+  });
+  return {total:list.length,started,passed,completed};
+}

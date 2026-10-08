@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Réviser les cours IFSI par domaine et chapitre</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=seo9">
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Réviser les cours IFSI par domaine et chapitre</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=course11">
   <meta name="description" content="Explorez les thèmes de révision en soins infirmiers par domaine, puis accédez aux fiches, cartes mentales et quiz associés.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/etudier.html">
@@ -18,10 +18,10 @@
 
 <input class="page-search" id="study-search" type="search" placeholder="Rechercher un chapitre : hygiène, cardio, diabète…">
 <div class="study-filter-row" id="study-filters" style="margin-top:14px"></div>
-<p class="muted small" style="margin:10px 0">Le classement par domaines est un repère de révision indicatif. Les fiches UE numérotées proviennent de l’ancien programme et ne couvrent pas à elles seules le référentiel 2026. <a href="methodologie.html">Comprendre les sources et limites.</a></p><div id="study-content"></div>
+<p class="muted small" style="margin:10px 0">Ouvre un domaine, puis un chapitre. Les cours disponibles apparaissent en premier. Les fiches UE numérotées proviennent de l’ancien programme et ne couvrent pas à elles seules le référentiel 2026. <a href="methodologie.html">Comprendre les sources et limites.</a></p><div id="study-content"></div>
 </main></div></div>
 
-<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js?v=seo9"></script><script src="assets/v2-core.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/study-topics.js?v=course11"></script><script src="assets/courses-data.js?v=course11"></script><script src="assets/v2-core.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('etudier');
 const input=document.getElementById('study-search'),filters=document.getElementById('study-filters'),content=document.getElementById('study-content');
@@ -29,12 +29,19 @@ const trainingProfile=getTrainingProfile(),isLegacy=trainingProfile.referential=
 const params=new URLSearchParams(location.search);let domain=params.get('domain')||'all';input.value=params.get('q')||'';
 function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function links(t){
- const a=[];
- if(t.ue)a.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">'+(isLegacy?'Fiches UE':'Fiches historiques')+'</a>');
- if(t.quizTopic)a.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Quiz</a>');
- if(t.mapId)a.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Carte mentale</a>');
- if(t.learningId)a.push('<a href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Cours guidé</a>');
- return a.join('')
+ const course=IFSI_COURSES.find(c=>c.id===t.id);
+ const choices=[];
+ if(t.quizTopic)choices.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Quiz</a>');
+ if(t.mapId)choices.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Carte mentale</a>');
+ if(t.learningId)choices.push('<a href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Parcours guidé</a>');
+ if(t.ue)choices.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">'+(isLegacy?'Fiches UE':'Fiches historiques')+'</a>');
+ if(course)return '<a class="study-topic-primary" href="cours.html?id='+encodeURIComponent(course.id)+'">Lire le cours ('+course.time+' min) →</a>'+
+  (choices.length?'<details><summary>Autres formats</summary><div>'+choices.join('')+'</div></details>':'');
+ if(choices.length)return '<a class="study-topic-primary" href="'+choices[0].match(/href="([^"]+)/)[1]+'">'+
+  (t.mapId?'Voir la ressource →':'Commencer →')+'</a>'+
+  (choices.length>1?'<details><summary>Autres formats</summary><div>'+choices.slice(1).join('')+'</div></details>':'')+
+  '<div class="study-topic-pending">Cours complet en préparation</div>';
+ return '<span class="study-topic-pending">Contenu pédagogique en préparation</span>';
 }
 function renderFilters(){
  const all=[['all','Tous'],...Object.keys(IFSI_DOMAINS).map(k=>[k,'Domaine '+k])];
@@ -51,7 +58,7 @@ function render(){
  }
  content.innerHTML=Object.entries(IFSI_DOMAINS).map(([k,label])=>{
    const topics=STUDY_TOPICS.filter(t=>t.domain===k);
-   return '<section class="study-section"><div class="study-section-title"><span class="study-domain-badge">'+k+'</span><div><h2>'+label+'</h2><span class="muted">'+topics.length+' chapitre'+(topics.length>1?'s':'')+'</span></div></div><div class="study-list">'+topics.map(topicCard).join('')+'</div></section>'
+   return '<details class="study-domain"><summary><span class="study-domain-badge">'+k+'</span><div><h2>Domaine '+k+' — '+label+'</h2><span class="muted">'+topics.length+' chapitre'+(topics.length>1?'s':'')+'</span></div></summary><div class="study-list">'+topics.map(topicCard).join('')+'</div></details>'
  }).join('')
 }
 input.addEventListener('input',render);renderFilters();render();initNurseAvatar('etudier');

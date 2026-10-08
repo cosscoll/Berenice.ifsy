@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cours de soins infirmiers — IFSI Platform</title>
+<meta name="description" content="Cours de révision infirmière structurés : objectifs, explications, exemples, questions de compréhension et références officielles.">
+<meta name="robots" content="noindex,follow">
+<link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/cours.html">
+<meta property="og:title" content="Cours de soins infirmiers — IFSI Platform">
+<meta property="og:description" content="Cours pédagogiques sourcés pour apprendre et vérifier les notions fondamentales en soins infirmiers.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/v2.css">
+<link rel="stylesheet" data-ifsi-ux="course11" href="assets/ux.css?v=course11">
+</head>
+<body>
+<div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
+<div class="course-breadcrumb"><a href="etudier.html">Réviser</a> <span aria-hidden="true">›</span> <span id="crumb-title">Cours</span></div>
+<div id="course-reader" aria-live="polite"></div>
+</main></div></div>
+<script src="assets/error-reporter.js"></script>
+<script src="assets/icons.js"></script>
+<script src="assets/study-topics.js?v=course11"></script>
+<script src="assets/nav.js?v=course11"></script>
+<script src="assets/v2-core.js"></script>
+<script src="assets/courses-data.js?v=course11"></script>
+<script src="assets/nurse-avatar.js"></script>
+<script>
+renderNav('etudier');
+const root=document.getElementById('course-reader');
+const key='ifsi_course_progress_v1';
+const params=new URLSearchParams(location.search);
+const id=params.get('id');
+const selected=IFSI_COURSES.find(c=>c.id===id);
+function state(){try{return JSON.parse(localStorage.getItem(key)||'{}')}catch{return {}}}
+function store(v){try{localStorage.setItem(key,JSON.stringify(v))}catch(e){}}
+function escapeText(v){return safeText(v)}
+function sourceList(c){
+ return c.sources.map(s=>'<li><a href="'+escapeText(s.url)+'" target="_blank" rel="noopener noreferrer">'+escapeText(s.name)+'</a></li>').join('')
+}
+function related(c){
+ const topic=STUDY_TOPICS.find(t=>t.id===c.id),links=[];
+ if(topic?.quizTopic)links.push('<a href="quiz.html?topic='+encodeURIComponent(topic.quizTopic)+'">Faire un quiz sur le thème</a>');
+ if(topic?.mapId)links.push('<a href="cartes-mentales.html?id='+encodeURIComponent(topic.mapId)+'">Voir la carte mentale</a>');
+ if(topic?.learningId)links.push('<a href="apprentissage.html?module='+encodeURIComponent(topic.learningId)+'">Parcours guidé court</a>');
+ if(topic?.ue)links.push('<a href="revision.html?ue='+encodeURIComponent(topic.ue)+'">Anciennes fiches UE (complément)</a>');
+ return links.length?'<details class="course-related"><summary>Continuer à travailler cette notion</summary><div>'+links.join('')+'</div></details>':''
+}
+function renderLibrary(){
+ root.innerHTML='<header class="course-head"><span class="pill">Bibliothèque pédagogique</span><h1>Cours disponibles</h1><p>Choisis une notion. Les cours sont des supports de révision, pas des protocoles de soin.</p></header>'+
+ '<div class="course-collection">'+IFSI_COURSES.map(c=>'<a class="course-collection-item" href="cours.html?id='+encodeURIComponent(c.id)+'"><span class="pill">Domaine '+c.domain+'</span><strong>'+escapeText(c.title)+'</strong><span>'+c.time+' min • '+escapeText(c.level)+'</span></a>').join('')+'</div>';
+}
+function feedback(c,answerIndex){
+ const ok=answerIndex===c.check.answer,box=document.getElementById('course-feedback');
+ box.innerHTML='<div class="course-feedback '+(ok?'is-correct':'is-review')+'"><strong>'+(ok?'Bonne réponse.':'À consolider.')+'</strong><p>'+escapeText(c.check.explanation)+'</p></div>';
+ document.querySelectorAll('.course-answer').forEach((b,i)=>{b.disabled=true;if(i===c.check.answer)b.classList.add('correct');else if(i===answerIndex)b.classList.add('wrong')});
+ const progress=state(),prior=progress[c.id]||{read:false,passed:false};
+ progress[c.id]={read:prior.read,passed:ok||prior.passed,updated:new Date().toISOString()};
+ store(progress);
+ updateProgress(c);
+}
+function updateProgress(c){
+ const p=state()[c.id]||{read:false,passed:false};
+ const label=document.getElementById('course-progress-label');
+ if(label)label.textContent=p.read&&p.passed?'Cours terminé':p.read?'Lecture enregistrée • vérification à poursuivre':p.passed?'Question réussie • lecture à valider':'À commencer';
+ const btn=document.getElementById('mark-read');
+ if(btn){btn.textContent=p.read?'Lecture enregistrée ✓':'J’ai lu et compris le cours';btn.setAttribute('aria-pressed',String(!!p.read))}
+}
+function renderCourse(c){
+ document.getElementById('crumb-title').textContent=c.title;
+ document.title=c.title+' — Cours IFSI';
+ const progress=state()[c.id]||{};
+ root.innerHTML='<header class="course-head"><div class="course-meta"><span class="pill">Domaine '+c.domain+'</span><span class="course-minutes">'+c.time+' min de lecture estimées</span><span>'+escapeText(c.level)+'</span></div>'+
+ '<h1>'+escapeText(c.title)+'</h1><p class="course-objective"><strong>À la fin, tu sauras :</strong> '+escapeText(c.objective)+'</p>'+
+ '<p class="muted small" id="course-progress-label" role="status"></p></header>'+
+ '<div class="course-layout"><article class="course-main">'+
+ c.sections.map((s,i)=>'<section class="course-section" id="part-'+i+'"><div class="course-step">Partie '+(i+1)+' / '+c.sections.length+'</div><h2>'+escapeText(s[0])+'</h2><p>'+escapeText(s[1])+'</p></section>').join('')+
+ '<section class="course-section course-scenario"><div class="course-step">Mise en pratique</div><h2>À toi de raisonner</h2><p>'+escapeText(c.scenario)+'</p><p class="muted small">Exercice fictif d’analyse. Aucune décision clinique réelle ne doit être prise à partir de cet exemple.</p></section>'+
+ '<section class="course-section course-selfcheck" id="check"><div class="course-step">Vérification des acquis</div><h2>As-tu compris l’essentiel ?</h2><p>'+escapeText(c.check.question)+'</p><div class="course-answers">'+c.check.choices.map((opt,i)=>'<button type="button" class="course-answer" data-answer="'+i+'">'+escapeText(opt)+'</button>').join('')+'</div><div id="course-feedback" aria-live="polite"></div></section>'+
+ '<section class="course-section"><h2>À retenir</h2><ul>'+c.takeaway.map(t=>'<li>'+escapeText(t)+'</li>').join('')+'</ul><button type="button" class="v2-button" id="mark-read" aria-pressed="false">J’ai lu et compris le cours</button></section>'+
+ '<section class="course-sources"><h2>Sources consultables</h2><ul>'+sourceList(c)+'</ul><p>Rédaction pédagogique : octobre 2026. Ce contenu ne remplace ni les enseignements de l’IFSI ni les protocoles du terrain.</p></section>'+
+ related(c)+'</article>'+
+ '<aside class="course-outline" aria-label="Sommaire du cours"><strong>Dans ce cours</strong><nav>'+c.sections.map((s,i)=>'<a href="#part-'+i+'">'+escapeText(s[0])+'</a>').join('')+'<a href="#check">Vérifier mes acquis</a></nav><a class="course-outline-back" href="etudier.html">← Tous les chapitres</a></aside></div>';
+ root.querySelectorAll('[data-answer]').forEach(b=>b.addEventListener('click',()=>feedback(c,Number(b.dataset.answer))));
+ root.querySelector('#mark-read').addEventListener('click',()=>{const all=state(),p=all[c.id]||{};all[c.id]={read:!p.read,passed:!!p.passed,updated:new Date().toISOString()};store(all);updateProgress(c)});
+ updateProgress(c);
+}
+if(selected)renderCourse(selected);else renderLibrary();
+initNurseAvatar('cours');
+</script>
+</body>
+</html>
