@@ -51,10 +51,11 @@ const UE_CATALOGUE = [
 
 const FSRS_DECK = [
   {
-    id: 'card-avk', ue: '2.11', concept: 'AVK',
-    front: "Surveillance AVK curatif = dosage de l'INR",
-    back: 'Cible 2-3. Si > 5 : risque hémorragique.',
-    md: '# AVK\n## Action\n## Surveillance\n### INR\n## Antidote\n### Vitamine K',
+    id: 'card-avk', ue: '2.11', concept: 'AVK et surveillance biologique',
+    front: "Quel examen biologique sert à surveiller un traitement par antivitamine K (AVK) ?",
+    back: "L’INR permet de suivre l’intensité de l’anticoagulation sous AVK. Sa cible dépend de l’indication et de la prescription : elle n’est pas identique pour tous les patients. Une anomalie doit être interprétée dans le contexte clinique et selon le protocole du service.",
+    sourceUrl: 'https://www.has-sante.fr/upload/docs/application/pdf/2014-09/avc_argumentaire.pdf',
+    md: '# Surveillance AVK\n## INR\n## Cible individualisée\n## Prescription et protocole\n## Risque thrombotique et hémorragique',
   },
   {
     id: 'card-ic', ue: '2.7', concept: 'Insuffisance cardiaque',
@@ -70,9 +71,10 @@ const FSRS_DECK = [
   },
   {
     id: 'card-sdre', ue: '2.6', concept: 'SDRE',
-    front: 'Que signifie SDRE et qui peut le prononcer ?',
-    back: "Soins à la Demande d'un Représentant de l'État — prononcé par le préfet, sur péril imminent.",
-    md: '# SDRE\n## Décideur\n### Préfet\n## Condition\n### Péril imminent',
+    front: "Que signifie SDRE et sur quelle base une admission peut-elle être décidée ?",
+    back: "Soins psychiatriques sur décision du représentant de l’État. Selon l’article L3213-1 du Code de la santé publique, le préfet peut prononcer l’admission par arrêté motivé sur la base d’un certificat médical circonstancié, lorsque les troubles nécessitent des soins et compromettent la sûreté des personnes ou portent gravement atteinte à l’ordre public. Les procédures particulières et les mesures provisoires relèvent de dispositions spécifiques.",
+    sourceUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000028016871/',
+    md: '# SDRE\n## Décision\n### Représentant de l’État\n## Base légale\n### L3213-1\n## Certificat médical\n## Sûreté des personnes / ordre public',
   },
   {
     id: 'card-claeys', ue: '4.7', concept: 'Loi Claeys-Leonetti',

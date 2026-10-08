@@ -15,7 +15,7 @@
 </section>
 <div id="revision-area"></div>
 </main></div></div>
-<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/student.js"></script><script src="assets/data.js"></script><script src="assets/fsrs.js"></script><script src="assets/simple-mindmap.js"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=seo9"></script><script src="assets/student.js"></script><script src="assets/data.js?v=medical10"></script><script src="assets/fsrs.js"></script><script src="assets/simple-mindmap.js"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('revision');
 const requestedUe=new URLSearchParams(location.search).get('ue');
@@ -32,7 +32,7 @@ function render(){
  }
  const c=queue[0],done=total-queue.length,pct=total?Math.round(done/total*100):0;
  area.innerHTML='<div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div><p class="progress-label">'+done+' / '+total+'</p><div class="study-card"><span class="ue-tag">UE '+c.ue+' — '+c.concept+'</span><p class="front">'+c.front+'</p>'+
- (revealed?'<div class="back-reveal">'+c.back+'</div><div id="mindmap-wrap" style="text-align:left;margin-top:18px"></div><div class="rating-bar"><button class="rate-again" data-rating="1">À revoir</button><button class="rate-hard" data-rating="2">Difficile</button><button class="rate-good" data-rating="3">Bien</button><button class="rate-easy" data-rating="4">Facile</button></div>':'<button class="primary reveal-btn" id="reveal">Voir la réponse</button>')+'</div>';
+ (revealed?'<div class="back-reveal">'+c.back+'</div>'+(c.sourceUrl?'<p class="muted small"><a href="'+c.sourceUrl+'" target="_blank" rel="noopener noreferrer">Consulter la source</a></p>':'')+'<div id="mindmap-wrap" style="text-align:left;margin-top:18px"></div><div class="rating-bar"><button class="rate-again" data-rating="1">À revoir</button><button class="rate-hard" data-rating="2">Difficile</button><button class="rate-good" data-rating="3">Bien</button><button class="rate-easy" data-rating="4">Facile</button></div>':'<button class="primary reveal-btn" id="reveal">Voir la réponse</button>')+'</div>';
  if(revealed){try{renderMindmapInto(document.getElementById('mindmap-wrap'),c.md,{height:300,title:c.concept})}catch(e){}document.querySelectorAll('[data-rating]').forEach(b=>b.onclick=()=>rate(c.id,Number(b.dataset.rating)))}else document.getElementById('reveal').onclick=()=>{revealed=true;render()}
 }
 function rate(id,r){reviewCard(id,r);queue.shift();revealed=false;render()}
