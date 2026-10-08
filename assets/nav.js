@@ -33,13 +33,13 @@ function iconFor(name){return window.ICONS&&ICONS[name]?ICONS[name]:''}
 function normSearch(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function ensureHeaderAssets(){
  if(!document.querySelector('link[data-ifsi-ux]')){
-  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css';l.dataset.ifsiUx='1';document.head.appendChild(l)
+  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=header8';l.dataset.ifsiUx='1';document.head.appendChild(l)
  }
  if(!window.STUDY_TOPICS&&!document.querySelector('script[data-study-topics]')){
   const s=document.createElement('script');s.src='assets/study-topics.js';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
  if(!document.querySelector('script[data-ifsi-chat]')){
-  const s=document.createElement('script');s.src='assets/ifsi-chat.js';s.dataset.ifsiChat='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=header8';s.dataset.ifsiChat='1';document.head.appendChild(s)
  }
 }
 function searchItems(query){
@@ -56,9 +56,12 @@ function renderHeaderSearch(input,box){
  box.innerHTML=hits.map(x=>'<a class="global-header-result" href="'+x.href+'"><span><strong>'+x.label+'</strong><small>'+x.kind+'</small></span><span>→</span></a>').join('');
  box.classList.add('open')
 }
+
 function buildHeader(activeId){
  const old=document.getElementById('ifsi-global-header');if(old)old.remove();
- const placeholder=document.getElementById('sidebar');if(placeholder)placeholder.hidden=true;
+ const placeholder=document.getElementById('sidebar');
+ // L'ancien aside n'a plus aucune fonction : il est retiré avant de monter le vrai header.
+ if(placeholder)placeholder.remove();
 
  const primary=HEADER_PRIMARY.map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>').join('');
  const more=HEADER_MORE.map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>').join('');
@@ -67,17 +70,20 @@ function buildHeader(activeId){
  const header=document.createElement('header');
  header.id='ifsi-global-header';
  header.className='global-header';
+ // Important : ne jamais insérer de navigation mobile masquée par CSS au chargement.
  header.innerHTML=
   '<div class="global-header-inner">'+
    '<a class="global-brand" href="index.html"><span class="global-brand-mark">I</span><span class="global-brand-name">IFSI Platform</span></a>'+
    '<nav class="global-nav" aria-label="Navigation principale">'+primary+
-    '<details class="global-more" '+(HEADER_MORE.some(x=>x.id===activeId)?'open':'')+'><summary>Plus ▾</summary><div class="global-more-menu">'+more+'</div></details>'+
+    '<details class="global-more"><summary aria-label="Autres pages">Plus ▾</summary><div class="global-more-menu">'+
+     '<div class="global-more-heading">Apprentissage</div>'+
+     more+
+    '</div></details>'+
    '</nav>'+
-   '<div class="global-search-box"><span class="global-search-icon">⌕</span><input id="header-search-input" type="search" autocomplete="off" placeholder="Rechercher un chapitre, une notion…"><span class="global-search-kbd">⌘K</span><div id="header-search-results" class="global-search-results"></div></div>'+
+   '<div class="global-search-box"><span class="global-search-icon" aria-hidden="true">⌕</span><input id="header-search-input" type="search" autocomplete="off" aria-label="Rechercher sur le site" placeholder="Rechercher un chapitre, une notion…"><span class="global-search-kbd">⌘K</span><div id="header-search-results" class="global-search-results"></div></div>'+
    '<button class="global-assistant-btn" id="header-chat-btn" type="button">✦ <span>Assistant</span></button>'+
-   '<button class="global-menu-btn" id="header-mobile-btn" type="button" aria-label="Ouvrir le menu">☰</button>'+
-  '</div>'+
-  '<nav class="global-mobile-menu" id="mobile-menu" aria-label="Navigation mobile">'+mobile+'</nav>';
+   '<button class="global-menu-btn" id="header-mobile-btn" type="button" aria-label="Ouvrir le menu" aria-expanded="false">☰</button>'+
+  '</div>';
 
  const app=document.querySelector('.app-shell');
  if(app&&app.parentNode) app.parentNode.insertBefore(header,app);
@@ -90,14 +96,42 @@ function buildHeader(activeId){
   if(e.key==='Enter'&&input.value.trim())location.href='etudier.html?q='+encodeURIComponent(input.value.trim());
   if(e.key==='Escape'){box.classList.remove('open');input.blur()}
  });
- document.addEventListener('click',e=>{if(!e.target.closest('.global-search-box'))box.classList.remove('open')});
- document.getElementById('header-mobile-btn').onclick=()=>document.getElementById('mobile-menu').classList.toggle('open');
- document.getElementById('header-chat-btn').onclick=()=>{if(window.openIfsiChat)window.openIfsiChat();else window.__openIfsiChatOnReady=true};
+ const moreMenu=header.querySelector('.global-more');
+ document.addEventListener('click',e=>{
+  if(!e.target.closest('.global-search-box'))box.classList.remove('open');
+  if(moreMenu.open&&!moreMenu.contains(e.target))moreMenu.open=false;
+ });
 
+ const menuButton=document.getElementById('header-mobile-btn');
+ function closeMobileMenu(){
+  const existing=header.querySelector('.global-mobile-menu');if(existing)existing.remove();
+  menuButton.setAttribute('aria-expanded','false');
+  menuButton.setAttribute('aria-label','Ouvrir le menu');
+ }
+ menuButton.addEventListener('click',()=>{
+  if(header.querySelector('.global-mobile-menu')){closeMobileMenu();return}
+  const menu=document.createElement('nav');
+  menu.className='global-mobile-menu open';
+  menu.id='mobile-menu';
+  menu.setAttribute('aria-label','Navigation mobile');
+  menu.innerHTML=mobile;
+  header.appendChild(menu);
+  menuButton.setAttribute('aria-expanded','true');
+  menuButton.setAttribute('aria-label','Fermer le menu');
+ });
+ document.addEventListener('click',e=>{
+  if(header.querySelector('.global-mobile-menu')&&!header.contains(e.target))closeMobileMenu()
+ });
+ window.addEventListener('resize',()=>{if(window.innerWidth>820)closeMobileMenu()});
+ document.getElementById('header-chat-btn').onclick=()=>{
+  if(window.openIfsiChat)window.openIfsiChat();
+  else window.__openIfsiChatOnReady=true
+ };
  if(!window.__ifsiHeaderKeys){
   window.__ifsiHeaderKeys=true;
   document.addEventListener('keydown',e=>{
-   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();input.focus();input.select()}
+   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();const current=document.getElementById('header-search-input');if(current){current.focus();current.select()}}
+   if(e.key==='Escape'){closeMobileMenu();moreMenu.open=false}
   })
  }
 }

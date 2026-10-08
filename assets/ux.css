@@ -118,3 +118,19 @@ main{max-width:1080px;margin:0 auto;padding:34px 28px 80px}
  .study-list{grid-template-columns:1fr}
  .ifsi-chat-panel{top:74px;right:10px;left:10px;bottom:10px;width:auto}
 }
+
+/* Correctif V8 : impossible d'afficher une seconde navigation en desktop. */
+@media (min-width:821px){
+ .global-header .global-mobile-menu, .global-mobile-menu{display:none!important}
+}
+.global-mobile-menu:not(.open){display:none!important}
+.global-more-heading{padding:7px 11px 4px;color:var(--ink-soft);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+@media (max-width:820px){
+ .global-mobile-menu.open{display:grid!important}
+}
+@media (min-width:1121px){
+ .global-header-inner{gap:12px}
+ .global-nav{gap:2px}
+ .global-nav>a,.global-more>summary{padding:9px 9px}
+ .global-search-box{max-width:310px}
+}
