@@ -10,12 +10,12 @@
   <meta property="og:description" content="Entraînez-vous avec des QCM infirmiers corrigés par thème : hygiène, médicaments, raisonnement clinique, éthique et plus encore.">
   <meta property="og:url" content="https://cosscoll.github.io/Berenice.ifsy/quiz.html">
   <meta name="twitter:card" content="summary">
-</head>
+<link rel="stylesheet" href="assets/quiz.css?v=quiz15"></head>
 <body><div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
 <section class="simple-page-head"><h1>Quiz</h1><p class="muted">Tu peux commencer tout de suite. Le choix du thème est optionnel.</p></section>
 
 <section class="quick-start" id="quiz-home">
-  <button class="primary-big" id="quick-start">Lancer 5 questions mélangées</button>
+  <button class="primary-big" id="quick-start" type="button">Lancer 5 questions mélangées</button><button class="v2-button secondary" id="review-mistakes" type="button" hidden>Revoir mes erreurs</button>
   <details class="disclosure" id="topic-disclosure">
     <summary>Je veux choisir un thème</summary>
     <div class="disclosure-body">
@@ -32,30 +32,103 @@
     </div>
   </details>
   <p class="muted" id="selected-label" style="text-align:center;margin-top:14px">Thème : tous les thèmes</p>
-  <button class="v2-button secondary" id="custom-start" style="display:none;width:100%;margin-top:8px">Démarrer ce quiz</button>
+  
 </section>
 
 <section class="v2-card" id="quiz-session" style="display:none"><div id="quiz-area"></div></section>
 </main></div></div>
-<script src="assets/error-reporter.js"></script><script src="assets/student.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=pathway14"></script><script src="assets/v2-core.js"></script><script src="assets/quiz-data.js?v=course12"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/student.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=pathway14"></script><script src="assets/v2-core.js"></script><script src="assets/quiz-data.js?v=quiz15"></script><script src="assets/quiz-utils.js?v=quiz15"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('quiz');
-let selected='Tous les thèmes',session=[],cursor=0,correct=0,locked=false;
-const topics=[...new Set(QUIZ_BANK.map(q=>q.topic))].sort(),list=document.getElementById('theme-list'),search=document.getElementById('topic-search');
-function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
-function renderThemes(){const q=norm(search.value);const hits=topics.filter(t=>!q||norm(t).includes(q));list.innerHTML=hits.map(t=>'<button class="theme-row '+(selected===t?'selected':'')+'" data-topic="'+safeText(t)+'"><span>'+safeText(t)+'</span><span class="muted">'+QUIZ_BANK.filter(x=>x.topic===t).length+' q.</span></button>').join('')||'<div class="empty-note">Aucun thème.</div>';list.querySelectorAll('[data-topic]').forEach(b=>b.onclick=()=>{selected=b.dataset.topic;document.getElementById('selected-label').textContent='Thème : '+selected;document.getElementById('quick-start').textContent='Lancer 5 questions : '+selected;renderThemes()})}
-function shuffled(a){return [...a].sort(()=>Math.random()-.5)}
-function startQuiz(forceQuick){
- const count=forceQuick?5:Number(document.getElementById('count-select').value),pool=forceQuick||selected==='Tous les thèmes'?QUIZ_BANK:QUIZ_BANK.filter(q=>q.topic===selected);
- session=shuffled(pool).slice(0,Math.min(count,pool.length));cursor=0;correct=0;locked=false;document.getElementById('quiz-home').style.display='none';document.getElementById('quiz-session').style.display='block';renderQuestion()
+const quizHome=document.getElementById('quiz-home');
+const quizSession=document.getElementById('quiz-session');
+const list=document.getElementById('theme-list');
+const search=document.getElementById('topic-search');
+const quickStart=document.getElementById('quick-start');
+const countSelect=document.getElementById('count-select');
+const selectedLabel=document.getElementById('selected-label');
+const reviewButton=document.getElementById('review-mistakes');
+const quizUtils=window.IFSI_QUIZ_UTILS;
+const topics=[...new Set(QUIZ_BANK.map(q=>q.topic))].sort((a,b)=>a.localeCompare(b,'fr'));
+let selected='Tous les thèmes',session=[],cursor=0,correct=0,locked=false,sessionErrors=[];
+const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const escapeText=safeText;
+function updateButtons(){
+ const count=Number(countSelect.value);
+ const quantity=count===99?'toutes les questions':count+' questions';
+ quickStart.textContent=selected==='Tous les thèmes'?'Lancer '+quantity+' mélangées':'Lancer '+quantity+' : '+selected;
+ selectedLabel.textContent=selected==='Tous les thèmes'?'Thème : tous les thèmes':'Thème : '+selected;
+ const due=quizUtils.dueQuestions(QUIZ_BANK);
+ reviewButton.hidden=!due.length;
+ if(due.length)reviewButton.textContent='Revoir mes '+due.length+' question'+(due.length>1?'s':'')+' à consolider';
+}
+function renderThemes(){
+ const q=normalize(search.value);
+ const hits=topics.filter(topic=>!q||normalize(topic).includes(q));
+ list.innerHTML=hits.map(topic=>'<button class="theme-row '+(selected===topic?'selected':'')+'" type="button" data-topic="'+escapeText(topic)+'"><span>'+escapeText(topic)+'</span><span class="muted">'+QUIZ_BANK.filter(item=>item.topic===topic).length+' q.</span></button>').join('')||'<div class="empty-note">Aucun thème trouvé.</div>';
+ list.querySelectorAll('[data-topic]').forEach(button=>button.addEventListener('click',()=>{
+  selected=button.dataset.topic;
+  renderThemes();updateButtons();
+  document.getElementById('topic-disclosure').open=false;
+ }));
+}
+function startQuiz(mode){
+ const count=Number(countSelect.value);
+ let pool=mode==='review'?quizUtils.dueQuestions(QUIZ_BANK):mode==='topic'?QUIZ_BANK.filter(q=>q.topic===selected):QUIZ_BANK;
+ if(!pool.length){updateButtons();return}
+ session=quizUtils.prepare(pool,count);
+ cursor=0;correct=0;locked=false;sessionErrors=[];
+ quizHome.style.display='none';quizSession.style.display='block';renderQuestion();
 }
 function renderQuestion(){
  const area=document.getElementById('quiz-area');
- if(cursor>=session.length){const pct=session.length?Math.round(correct/session.length*100):0;saveQuizSession(correct,session.length);area.innerHTML='<div class="done-state"><h1>'+pct+'%</h1><p>'+correct+' / '+session.length+' bonnes réponses</p><div class="v2-actions" style="justify-content:center"><button class="v2-button" id="again">Refaire un quiz</button><a class="v2-button secondary" href="etudier.html">Réviser un chapitre</a></div></div>';document.getElementById('again').onclick=()=>location.reload();return}
- locked=false;const q=session[cursor];area.innerHTML='<div class="quiz-progress"><div style="width:'+Math.round(cursor/session.length*100)+'%"></div></div><div style="display:flex;justify-content:space-between"><span class="pill">'+safeText(q.topic)+'</span><span class="muted">'+(cursor+1)+' / '+session.length+'</span></div><div class="quiz-question">'+safeText(q.question)+'</div><div class="quiz-choices">'+q.choices.map((c,i)=>'<button class="quiz-choice" data-i="'+i+'">'+safeText(c)+'</button>').join('')+'</div><div id="feedback"></div>';document.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>answer(Number(b.dataset.i)))
+ if(cursor>=session.length){renderResult();return}
+ locked=false;
+ const q=session[cursor];
+ area.innerHTML='<div class="quiz-progress"><div style="width:'+Math.round(cursor/session.length*100)+'%"></div></div>'+
+ '<div style="display:flex;justify-content:space-between;gap:12px"><span class="pill">'+escapeText(q.topic)+'</span><span class="muted">'+(cursor+1)+' / '+session.length+'</span></div>'+
+ '<h2 class="quiz-question">'+escapeText(q.question)+'</h2>'+
+ '<div class="quiz-choices">'+q.choices.map((choice,i)=>'<button type="button" class="quiz-choice" data-i="'+i+'">'+escapeText(choice)+'</button>').join('')+'</div>'+
+ '<div id="feedback" aria-live="polite"></div>';
+ area.querySelectorAll('[data-i]').forEach(button=>button.addEventListener('click',()=>answer(Number(button.dataset.i))));
 }
-function answer(i){if(locked)return;locked=true;const q=session[cursor];if(i===q.answer)correct++;document.querySelectorAll('.quiz-choice').forEach(b=>{const n=Number(b.dataset.i);b.disabled=true;if(n===q.answer)b.classList.add('correct');if(n===i&&n!==q.answer)b.classList.add('wrong')});document.getElementById('feedback').innerHTML='<div class="explanation">'+safeText(q.explanation)+(q.sourceUrl?'<p class="muted small"><a href="'+q.sourceUrl+'" target="_blank" rel="noopener noreferrer">Lire la source</a></p>':'')+'</div><div class="v2-actions"><button class="v2-button" id="next">'+(cursor===session.length-1?'Voir le résultat':'Continuer')+'</button></div>';document.getElementById('next').onclick=()=>{cursor++;renderQuestion()}}
-document.getElementById('quick-start').onclick=()=>startQuiz(selected==='Tous les thèmes');document.getElementById('custom-start').onclick=()=>startQuiz(false);search.addEventListener('input',renderThemes);
-const requested=new URLSearchParams(location.search).get('topic');if(requested&&topics.includes(requested)){selected=requested;document.getElementById('selected-label').textContent='Thème : '+selected;document.getElementById('quick-start').textContent='Lancer 5 questions : '+selected;document.getElementById('topic-disclosure').open=true}
-renderThemes();initNurseAvatar('quiz');
+function answer(i){
+ if(locked)return;
+ const q=session[cursor];if(!q||i<0||i>=q.choices.length)return;
+ locked=true;
+ const good=i===q.answer;
+ if(good)correct++;
+ else sessionErrors.push(q);
+ quizUtils.markAnswered(q.id,good);
+ document.querySelectorAll('.quiz-choice').forEach(button=>{
+  const value=Number(button.dataset.i);button.disabled=true;
+  if(value===q.answer)button.classList.add('correct');
+  else if(value===i)button.classList.add('wrong');
+ });
+ document.getElementById('feedback').innerHTML='<div class="explanation">'+escapeText(q.explanation)+
+ (q.sourceUrl?'<p class="muted small"><a href="'+q.sourceUrl+'" target="_blank" rel="noopener noreferrer">Lire la source</a></p>':'')+
+ '</div><div class="v2-actions"><button class="v2-button" id="next" type="button">'+(cursor===session.length-1?'Voir mon bilan':'Continuer')+'</button></div>';
+ document.getElementById('next').addEventListener('click',()=>{cursor++;renderQuestion()});
+}
+function renderResult(){
+ const area=document.getElementById('quiz-area');
+ const pct=session.length?Math.round(correct/session.length*100):0;
+ saveQuizSession(correct,session.length);
+ area.innerHTML='<div class="done-state"><h1>'+pct+' %</h1><p>'+correct+' / '+session.length+' bonnes réponses</p>'+
+ (sessionErrors.length?'<details class="quiz-review"><summary>Comprendre mes '+sessionErrors.length+' erreur'+(sessionErrors.length>1?'s':'')+'</summary><div>'+
+ sessionErrors.map(q=>'<article><strong>'+escapeText(q.question)+'</strong><p>'+escapeText(q.explanation)+'</p>'+
+ (q.sourceUrl?'<a href="'+q.sourceUrl+'" target="_blank" rel="noopener noreferrer">Consulter la source</a>':'')+'</article>').join('')+
+ '</div></details>':'<p>Tu peux recommencer avec d’autres questions pour vérifier tes acquis.</p>')+
+ '<div class="v2-actions" style="justify-content:center"><button class="v2-button" id="again" type="button">Faire un autre quiz</button><a class="v2-button secondary" href="etudier.html">Réviser un chapitre</a></div></div>';
+ document.getElementById('again').addEventListener('click',()=>{
+  quizSession.style.display='none';quizHome.style.display='block';updateButtons();
+ });
+}
+quickStart.addEventListener('click',()=>startQuiz(selected==='Tous les thèmes'?'mixed':'topic'));
+reviewButton.addEventListener('click',()=>startQuiz('review'));
+search.addEventListener('input',renderThemes);
+countSelect.addEventListener('change',updateButtons);
+const requested=new URLSearchParams(location.search).get('topic');
+if(requested&&topics.includes(requested)){selected=requested}
+renderThemes();updateButtons();initNurseAvatar('quiz');
 </script></body></html>

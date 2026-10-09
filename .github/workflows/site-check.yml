@@ -1,4 +1,4 @@
-name: Vérification statique IFSI
+name: Vérification IFSI
 on:
   push:
     branches: [main]
@@ -16,5 +16,33 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Vérifier pages, scripts et données pédagogiques
+      - name: Vérifier pages, scripts et contenus pédagogiques
         run: node tests/verify-site.mjs
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - name: Récupérer le site
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Installer le navigateur de test
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Tester les parcours ordinateur et mobile
+        env:
+          BASE_URL: http://127.0.0.1:8765
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/ifsi-server.log 2>&1 &
+          for i in $(seq 1 20); do curl --fail --silent http://127.0.0.1:8765/index.html >/dev/null && break; sleep 1; done
+          node tests/browser-smoke.mjs
+      - name: Captures en cas d’échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ifsi-browser-failures
+          path: test-results/
+          if-no-files-found: ignore

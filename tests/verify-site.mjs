@@ -38,7 +38,7 @@ for(const f of fs.readdirSync(path.join(root,'assets')).filter(x=>x.endsWith('.j
  try{new vm.Script(read('assets/'+f),{filename:f})}catch(e){errors.push('assets/'+f+': '+e.message)}
 }
 const sandbox=vm.createContext({window:{},console});
-for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js','cases-data.js','pathway-data.js']){
+for(const f of ['study-topics.js','quiz-data.js','learning-data.js','courses-data.js','cases-data.js','pathway-data.js','quiz-utils.js']){
  vm.runInContext(read('assets/'+f),sandbox,{filename:f});
 }
 const situations=sandbox.window.IFSI_CASES;
@@ -48,6 +48,16 @@ const quiz=vm.runInContext('QUIZ_BANK',sandbox);
 const learning=vm.runInContext('LEARNING_MODULES',sandbox);
 const topicIds=new Set(topics.map(t=>t.id)), courseIds=new Set(), quizIds=new Set(), lessonIds=new Set(learning.map(l=>l.id));
 const topicsWithQuiz=new Set(quiz.map(q=>q.topic));
+const quizUtils=sandbox.window.IFSI_QUIZ_UTILS;
+const prepared=quizUtils.prepare(quiz,quiz.length,()=>0.31);
+verify(prepared.length===quiz.length,'La préparation du quiz a perdu des questions');
+const originalById=new Map(quiz.map(q=>[q.id,q]));
+for(const q of prepared){
+ const original=originalById.get(q.id);
+ verify(!!original,'Une question transformée est inconnue : '+q.id);
+ if(original)verify(q.choices[q.answer]===original.choices[original.answer],'Le mélange des réponses modifie la correction : '+q.id);
+}
+
 for(const q of quiz){
  verify(!quizIds.has(q.id),'Question en double : '+q.id);quizIds.add(q.id);
  verify(q.id&&q.topic&&q.question&&Array.isArray(q.choices)&&q.choices.length>=2,'Question incomplète : '+q.id);
@@ -97,6 +107,8 @@ for(const stage of stages){
  }
  const group=stage.topics.map(id=>topics.find(t=>t.id===id)).filter(Boolean);
  const questions=chooseQuestions(stage,topics,quiz,8,()=>0.42);
+ const alternate=chooseQuestions(stage,topics,quiz,8,()=>0.42,questions.map(q=>q.id));
+ verify(alternate.length===8,'Bilan de second passage incomplet : '+stage.id);
  verify(questions.length===8,'Bilan transversal trop court : '+stage.id);
  verify(new Set(questions.map(q=>q.id)).size===questions.length,'Question du bilan dupliquée : '+stage.id);
  verify(new Set(questions.map(q=>q.topic)).size>=4,'Bilan pas assez transversal : '+stage.id);

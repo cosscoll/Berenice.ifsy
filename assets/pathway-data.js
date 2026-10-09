@@ -54,13 +54,14 @@ window.IFSI_PATHWAY = [
     "level": 3
   }
 ];
-function ifsiChooseQuestions(stage,topics,bank,count=8,random=Math.random){
+function ifsiChooseQuestions(stage,topics,bank,count=8,random=Math.random,previousIds=[]){
  const stageTopics=stage.topics.map(id=>topics.find(t=>t.id===id)).filter(Boolean);
  const themes=[...new Set(stageTopics.map(t=>t.quizTopic).filter(Boolean))];
  const shuffle=(items)=>{
   const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[result[i],result[j]]=[result[j],result[i]]}return result;
  };
- const all=shuffle(bank.filter(q=>themes.includes(q.topic)));
+ const recent=new Set(Array.isArray(previousIds)?previousIds:[]);
+ const all=shuffle(bank.filter(q=>themes.includes(q.topic))).sort((a,b)=>Number(recent.has(a.id))-Number(recent.has(b.id)));
  const used=new Set(),selected=[];
  for(const theme of shuffle(themes)){
   const question=all.find(q=>q.topic===theme&&!used.has(q.id));

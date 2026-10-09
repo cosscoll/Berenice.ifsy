@@ -22,8 +22,8 @@
 <script src="assets/study-topics.js?v=course12"></script>
 <script src="assets/courses-data.js?v=course12"></script>
 <script src="assets/cases-data.js?v=pathway14"></script>
-<script src="assets/quiz-data.js?v=course12"></script>
-<script src="assets/pathway-data.js?v=pathway14"></script>
+<script src="assets/quiz-data.js?v=quiz15"></script><script src="assets/quiz-utils.js?v=quiz15"></script>
+<script src="assets/pathway-data.js?v=quiz15"></script>
 <script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('parcours');
@@ -73,11 +73,12 @@ function showStage(){
  root.querySelectorAll('[data-year]').forEach(b=>b.addEventListener('click',()=>setStage(b.dataset.year)));
 }
 function startEvaluation(stage){
- const pool=ifsiChooseQuestions(stage,STUDY_TOPICS,QUIZ_BANK,8);
+ const previous=safeState(EXAM_KEY)[stage.id]?.lastQuestionIds||[];
+ const pool=ifsiChooseQuestions(stage,STUDY_TOPICS,QUIZ_BANK,8,Math.random,previous);
  if(pool.length<6){root.innerHTML='<p>Cette évaluation manque de questions pour être proposée. <a href="parcours.html">Retour</a></p>';return}
  activeStage=stage;
  try{localStorage.setItem(YEAR_KEY,stage.id)}catch(e){}
- questions=pool;answers=[];cursor=0;selectedAnswer=null;
+ questions=window.IFSI_QUIZ_UTILS.prepare(pool,pool.length);answers=[];cursor=0;selectedAnswer=null;
  history.replaceState(null,'','parcours.html?evaluation='+encodeURIComponent(stage.id));
  renderEvaluation();
 }
@@ -105,7 +106,7 @@ function renderEvaluation(){
 function finishEvaluation(){
  const score=answers.filter(a=>a.correct).length,st=safeState(EXAM_KEY),prior=st[activeStage.id]||{};
  const improved=!Number.isFinite(prior.bestScore)||score/questions.length>prior.bestScore/(prior.bestTotal||1);
- st[activeStage.id]={attempts:(prior.attempts||0)+1,lastScore:score,lastTotal:questions.length,bestScore:improved?score:prior.bestScore,bestTotal:improved?questions.length:prior.bestTotal,updated:new Date().toISOString()};
+ st[activeStage.id]={attempts:(prior.attempts||0)+1,lastScore:score,lastTotal:questions.length,bestScore:improved?score:prior.bestScore,bestTotal:improved?questions.length:prior.bestTotal,lastQuestionIds:questions.map(q=>q.id),updated:new Date().toISOString()};
  const saved=saveState(EXAM_KEY,st);
  const missed=answers.map((a,i)=>({a,q:questions[i]})).filter(x=>!x.a.correct);
  root.innerHTML='<section class="pathway-eval-result"><span class="pill">Bilan personnel · '+esc(activeStage.label)+'</span><h1>Ton bilan transversal</h1><div class="pathway-big-score">'+score+' / '+questions.length+'</div><p>'+(score===questions.length?'Toutes les réponses proposées sont correctes sur cette tentative.':'Revois les explications ci-dessous pour identifier les notions à consolider.')+'</p><p class="pathway-small">'+(saved?'Résultat enregistré dans ce navigateur.':'Le résultat n’a pas pu être sauvegardé sur cet appareil.')+'</p>'+

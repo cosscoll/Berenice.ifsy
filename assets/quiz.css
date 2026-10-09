@@ -1,0 +1,15 @@
+/* Quiz — expérience minimale, puis correction exploitable */
+#review-mistakes{display:block;margin:12px 0 0;width:100%;font-size:13px;border-radius:12px;padding:10px}
+#review-mistakes[hidden]{display:none!important}
+.quiz-review{border:1px solid var(--line);border-radius:14px;background:#fff;text-align:left;margin:22px auto;padding:0;max-width:720px;overflow:hidden}
+.quiz-review>summary{padding:16px 20px;cursor:pointer;list-style:none;font-size:14px;font-weight:650}
+.quiz-review>summary::-webkit-details-marker{display:none}
+.quiz-review>summary:after{content:'⌄';float:right;color:var(--pine)}
+.quiz-review[open]>summary:after{content:'⌃'}
+.quiz-review>div{border-top:1px solid var(--line);padding:0 18px}
+.quiz-review article{padding:18px 0;border-bottom:1px solid var(--line)}
+.quiz-review article:last-child{border-bottom:0}
+.quiz-review article>strong{font-size:14px;line-height:1.5}
+.quiz-review article p{font-size:13px;color:var(--ink-soft);margin:9px 0;line-height:1.6}
+.quiz-review article a{display:inline-block;font-size:12px;color:var(--pine);text-decoration:underline}
+@media(max-width:700px){.quiz-review>summary{padding:15px}.quiz-review>div{padding:0 14px}}
