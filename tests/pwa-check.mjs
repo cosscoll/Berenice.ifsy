@@ -13,5 +13,5 @@ const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
 assert.ok(sw.includes('offline.html')&&sw.includes('cours.html')&&sw.includes('cache.match'),'Cache hors ligne incomplet');
 assert.ok(!sw.includes('localStorage')&&!sw.includes('patients.json'),'Le cache de pages publiques ne doit pas stocker les données d’apprenants');
 const pwa=fs.readFileSync(path.join(root,'assets/pwa.js'),'utf8');
-assert.ok(pwa.includes("serviceWorker.register('sw.js'")),'Enregistrement manquant');
+assert.ok(pwa.includes("serviceWorker.register('sw.js'"),'Enregistrement manquant');
 console.log('PWA : manifeste, icônes, précache public et enregistrement présents.');
