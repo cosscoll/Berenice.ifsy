@@ -22,6 +22,8 @@ jobs:
         run: node tests/chat-relevance.mjs
       - name: Vérifier la PWA et ses ressources publiques
         run: node tests/pwa-check.mjs
+      - name: Vérifier la sauvegarde locale et sa restauration
+        run: node tests/backup-check.mjs
   browser:
     runs-on: ubuntu-latest
     timeout-minutes: 14

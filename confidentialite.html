@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Confidentialité et données de révision — IFSI Platform</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" href="assets/ux.css?v=big17"><meta name="description" content="Comprendre le stockage local des révisions, la confidentialité des notes de stage et les services externes utilisés par la plateforme IFSI."><meta name="robots" content="index,follow"><link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/confidentialite.html"><meta property="og:title" content="Confidentialité et données de révision IFSI"><meta property="og:description" content="Comprendre le stockage local des révisions, la confidentialité des notes de stage et les services externes utilisés par la plateforme IFSI."><meta property="og:url" content="https://cosscoll.github.io/Berenice.ifsy/confidentialite.html"><meta property="og:type" content="website"></head>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Confidentialité et données de révision — IFSI Platform</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" href="assets/ux.css?v=final18"><meta name="description" content="Comprendre le stockage local des révisions, la confidentialité des notes de stage et les services externes utilisés par la plateforme IFSI."><meta name="robots" content="index,follow"><link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/confidentialite.html"><meta property="og:title" content="Confidentialité et données de révision IFSI"><meta property="og:description" content="Comprendre le stockage local des révisions, la confidentialité des notes de stage et les services externes utilisés par la plateforme IFSI."><meta property="og:url" content="https://cosscoll.github.io/Berenice.ifsy/confidentialite.html"><meta property="og:type" content="website"></head>
 <body><div class="app-shell"><aside id="sidebar" class="sidebar"></aside><div class="content-column"><main>
 <article class="v2-card" style="max-width:800px;margin:24px auto">
 <h1>Confidentialité et stockage des données</h1>
-<p class="muted">Informations sur cette version de démonstration. Mise à jour : 8 octobre 2026.</p>
+<p class="muted">Informations sur cette version de démonstration. Mise à jour : 9 octobre 2026.</p>
 <h2>Où sont enregistrées les données ?</h2>
 <p>La progression, les résultats des quiz, les objectifs de stage, les notes et les préférences sont enregistrés dans le stockage local (<code>localStorage</code>) du navigateur utilisé. Cette version ne dispose pas de compte utilisateur ni de synchronisation entre appareils.</p>
 <h2>Qui peut voir mes données ?</h2>
@@ -13,25 +13,38 @@
 <h2>Chatbot</h2>
 <p>L’assistant actuel est local : il recherche dans les contenus présents sur le site. Il ne se substitue pas à un professionnel de santé et ne permet pas de transmettre de données de patients.</p>
 <h2>Supprimer mes données</h2>
-<p>Vous pouvez effacer les données du site depuis les paramètres de stockage de votre navigateur. Cette suppression est irréversible. Vous pouvez également exporter puis effacer les données enregistrées par cette plateforme avec les commandes ci-dessous.</p>
-<div class="notice-v2"><strong>Gérer mes données locales</strong><p>Ces actions concernent uniquement ce navigateur. Le fichier exporté peut contenir des notes personnelles : conservez-le dans un endroit sûr.</p><p id="local-data-count" aria-live="polite"></p><div class="v2-actions"><button type="button" id="export-local" class="v2-button secondary">Exporter mes données</button><button type="button" id="erase-local" class="v2-button secondary">Effacer mes données</button></div><p id="local-data-status" role="status" aria-live="polite"></p></div>
+<p>Vous pouvez effacer les données du site depuis les paramètres de stockage de votre navigateur. Cette suppression est irréversible. Vous pouvez exporter vos données, restaurer une sauvegarde ou effacer les données enregistrées par cette plateforme avec les commandes ci-dessous.</p>
+<div class="notice-v2"><strong>Gérer mes données locales</strong><p>Ces actions concernent uniquement ce navigateur. Le fichier exporté peut contenir des notes personnelles : conservez-le dans un endroit sûr.</p><p id="local-data-count" aria-live="polite"></p><div class="v2-actions"><button type="button" id="export-local" class="v2-button secondary">Exporter mes données</button><button type="button" id="erase-local" class="v2-button secondary">Effacer mes données</button></div><div class="backup-import" style="margin-top:16px"><label for="backup-file"><strong>Restaurer une sauvegarde existante</strong></label><p class="muted small">Sélectionne uniquement un fichier JSON que tu as exporté depuis ce site. La restauration remplace les éléments portant le même nom, sans effacer les autres.</p><input id="backup-file" type="file" accept=".json,application/json" style="display:block;margin:10px 0;max-width:100%"><button type="button" id="import-local" class="v2-button secondary">Importer ma sauvegarde</button></div><p id="local-data-status" role="status" aria-live="polite"></p></div>
 <p><a href="index.html">Retour à l’accueil</a> · <a href="methodologie.html">Méthodologie pédagogique</a></p>
 </article></main></div></div>
-<script src="assets/icons.js"></script><script src="assets/nav.js?v=big17"></script><script src="assets/nurse-avatar.js"></script><script>
+<script src="assets/icons.js"></script><script src="assets/nav.js?v=final18"></script><script src="assets/backup.js?v=final18"></script><script src="assets/nurse-avatar.js"></script><script>
 renderNav('confidentialite');initNurseAvatar('confidentialite');
-const keys=()=>Object.keys(localStorage).filter(key=>key.startsWith('ifsi_')).sort();
+const keys=()=>window.IFSI_BACKUP.getKeys(localStorage);
 const count=document.getElementById('local-data-count');
 const status=document.getElementById('local-data-status');
 function refresh(){const n=keys().length;count.textContent=n+' élément'+(n>1?'s':'')+' de stockage local actuellement enregistré'+(n>1?'s':'')+'.'}
 document.getElementById('export-local').addEventListener('click',()=>{
  try{
-  const data={};keys().forEach(k=>{data[k]=localStorage.getItem(k)});
-  const file=new Blob([JSON.stringify({source:'IFSI Platform',date:new Date().toISOString(),data},null,2)],{type:'application/json;charset=utf-8'});
+  const backup=window.IFSI_BACKUP.exportData(localStorage);
+  const file=new Blob([JSON.stringify(backup,null,2)],{type:'application/json;charset=utf-8'});
   const url=URL.createObjectURL(file);const link=document.createElement('a');
   link.href=url;link.download='ifsi-donnees-locales.json';document.body.appendChild(link);link.click();link.remove();
   setTimeout(()=>URL.revokeObjectURL(url),2000);
   status.textContent='Fichier exporté. Conservez-le dans un espace personnel sécurisé.';
  }catch(e){status.textContent='Export impossible dans ce navigateur.'}
+});
+document.getElementById('import-local').addEventListener('click',async()=>{
+ const chosen=document.getElementById('backup-file').files?.[0];
+ if(!chosen){status.textContent='Sélectionnez d’abord une sauvegarde JSON.';return}
+ try{
+  if(chosen.size>2*1024*1024)throw new Error('Fichier trop volumineux (maximum 2 Mo).');
+  const parsed=window.IFSI_BACKUP.parseBackup(await chosen.text());
+  if(!parsed.entries.length){status.textContent='La sauvegarde ne contient aucune donnée à restaurer.';return}
+  if(!confirm('Restaurer '+parsed.entries.length+' élément(s) ? Les données actuelles portant les mêmes noms seront remplacées.'))return;
+  const number=window.IFSI_BACKUP.restoreBackup(localStorage,parsed);
+  refresh();status.textContent=number+' élément(s) restauré(s). Rechargez les pages pour actualiser votre progression.';
+  document.getElementById('backup-file').value='';
+ }catch(error){status.textContent='Import impossible : '+(error?.message||'fichier non reconnu')}
 });
 document.getElementById('erase-local').addEventListener('click',()=>{
  if(prompt('Cette action efface les données locales IFSI de ce navigateur (progression, notes et objectifs). Tapez SUPPRIMER pour confirmer :')!=='SUPPRIMER')return;

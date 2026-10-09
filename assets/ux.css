@@ -275,3 +275,8 @@ main{max-width:1080px;margin:0 auto;padding:34px 28px 80px}
 .ifsi-install-action:focus-visible,.global-more summary:focus-visible,.global-menu-btn:focus-visible,.global-header a:focus-visible{outline:3px solid #d19a20;outline-offset:3px}
 #ifsi-main-content:focus{outline:none}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Finition V18 : état de recherche vide et navigation clavier lisible. */
+.global-search-empty{padding:15px 14px;color:var(--ink-soft);font-size:13px;line-height:1.55}
+.global-header-result:focus-visible{outline:3px solid var(--pine);outline-offset:-3px;background:var(--pine-soft)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

@@ -189,6 +189,42 @@ await smoke('offline-course',{width:1280,height:850},async page=>{
  await page.locator('.course-head h1').waitFor({timeout:10000});
  await page.context().setOffline(false);
 });
+await smoke('header-search-noresults',{width:1280,height:850},async page=>{
+ await visit(page,'/index.html');
+ const field=page.locator('#header-search-input');
+ await field.fill('abcdefghijkpasuncours');
+ await page.locator('.global-search-empty').waitFor();
+ assert.equal(await field.getAttribute('aria-expanded'),'true');
+ await field.press('Enter');
+ await page.waitForURL(/etudier\.html\?q=/);
+ await page.locator('.empty-note').waitFor();
+});
+await smoke('backup-restore',{width:1280,height:850},async page=>{
+ await visit(page,'/confidentialite.html');
+ await page.evaluate(()=>localStorage.setItem('ifsi_daily_goal_minutes_v1','45'));
+ const valid={source:'IFSI Platform',version:1,date:new Date().toISOString(),data:{ifsi_daily_goal_minutes_v1:'20'}};
+ await page.locator('#backup-file').setInputFiles({name:'ma-sauvegarde.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(valid))});
+ page.once('dialog',dialog=>dialog.accept());
+ await page.locator('#import-local').click();
+ await page.locator('#local-data-status:has-text("restauré")').waitFor();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('ifsi_daily_goal_minutes_v1')),'20');
+ const invalid={source:'IFSI Platform',data:{external_key:'evil'}};
+ await page.locator('#backup-file').setInputFiles({name:'incorrect.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalid))});
+ await page.locator('#import-local').click();
+ await page.locator('#local-data-status:has-text("non autorisé")').waitFor();
+ assert.equal(await page.evaluate(()=>localStorage.getItem('ifsi_daily_goal_minutes_v1')),'20');
+ const downloadEvent=page.waitForEvent('download');
+ await page.locator('#export-local').click();
+ const download=await downloadEvent;
+ assert.equal(download.suggestedFilename(),'ifsi-donnees-locales.json');
+});
+await smoke('quiz-review-link',{width:1280,height:850},async page=>{
+ await visit(page,'/quiz.html');
+ await page.evaluate(()=>localStorage.setItem('ifsi_quiz_review_v2',JSON.stringify({'q-v15-001':{attempts:1,mistakes:1,needsReview:true}})));
+ await page.goto(base+'/quiz.html?review=1',{waitUntil:'domcontentloaded'});
+ await page.locator('.quiz-question').waitFor();
+ assert.ok((await page.locator('#quiz-home').isVisible())===false);
+});
 await browser.close();
 if(failures)process.exitCode=1;
 else console.log('Recette navigateur réussie sur ordinateur et mobile.');

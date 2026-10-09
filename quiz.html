@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Quiz IFSI : questions corrigées en soins infirmiers</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=big17">
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Quiz IFSI : questions corrigées en soins infirmiers</title><link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="header8" href="assets/ux.css?v=final18">
   <meta name="description" content="Entraînez-vous avec des QCM infirmiers corrigés par thème : hygiène, médicaments, raisonnement clinique, éthique et plus encore.">
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/quiz.html">
@@ -37,7 +37,7 @@
 
 <section class="v2-card" id="quiz-session" style="display:none"><div id="quiz-area"></div></section>
 </main></div></div>
-<script src="assets/error-reporter.js"></script><script src="assets/student.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=big17"></script><script src="assets/v2-core.js"></script><script src="assets/quiz-data.js?v=quiz15"></script><script src="assets/quiz-utils.js?v=big17"></script><script src="assets/nurse-avatar.js"></script>
+<script src="assets/error-reporter.js"></script><script src="assets/student.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=final18"></script><script src="assets/v2-core.js"></script><script src="assets/quiz-data.js?v=quiz15"></script><script src="assets/quiz-utils.js?v=big17"></script><script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('quiz');
 const quizHome=document.getElementById('quiz-home');
@@ -130,5 +130,5 @@ search.addEventListener('input',renderThemes);
 countSelect.addEventListener('change',updateButtons);
 const requested=new URLSearchParams(location.search).get('topic');
 if(requested&&topics.includes(requested)){selected=requested}
-renderThemes();updateButtons();initNurseAvatar('quiz');
+renderThemes();updateButtons();if(new URLSearchParams(location.search).get('review')==='1'&&quizUtils.dueQuestions(QUIZ_BANK).length)startQuiz('review');initNurseAvatar('quiz');
 </script></body></html>
