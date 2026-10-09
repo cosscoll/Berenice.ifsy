@@ -45,7 +45,7 @@ function ensureHeaderAssets(){
   const s=document.createElement('script');s.src='assets/study-topics.js?v=course12';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
  if(!document.querySelector('script[data-ifsi-chat]')){
-  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=cases13';s.dataset.ifsiChat='1';document.head.appendChild(s)
+  const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=chat16';s.dataset.ifsiChat='1';document.head.appendChild(s)
  }
 }
 function searchItems(query){

@@ -1,96 +1,127 @@
-/** Assistant IFSI local — navigation + contenus validés du site. */
+/**
+ * Assistant pédagogique IFSI : réponses extraites et sourcées depuis les cours.
+ * Pas d'accès à une API IA externe. Ne jamais donner de réponse aléatoire.
+ */
 (function(){
-  function n(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
-  function safe(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-  function addScript(src,marker){
-    if(document.querySelector('script['+marker+']'))return;
-    const s=document.createElement('script');s.src=src;s.setAttribute(marker,'1');document.head.appendChild(s);
+ 'use strict';
+ let lastTopic=null,queue=Promise.resolve();
+ function safeHref(s){
+  if(typeof s!=='string')return null;
+  if(/^https:\/\//i.test(s))return s;
+  if(/^[a-z0-9-]+\.html(?:\?[a-z0-9%=&._-]+)?$/i.test(s))return s;
+  return null;
+ }
+ function load(src,ready){
+  if(ready())return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+   const script=document.createElement('script');
+   script.src=src;script.async=true;
+   script.onload=()=>ready()?resolve():reject(new Error('Données indisponibles'));
+   script.onerror=()=>reject(new Error('Chargement impossible'));
+   document.head.appendChild(script);
+  });
+ }
+ const ready=Promise.all([
+  load('assets/chat-knowledge.js?v=chat16',()=>!!window.IFSI_CHAT_KNOWLEDGE),
+  load('assets/chat-engine.js?v=chat16',()=>!!window.IFSI_CHAT_ENGINE)
+ ]);
+ function messages(){return document.getElementById('ifsi-chat-messages')}
+ function append(type,text){
+  const el=document.createElement('div');
+  el.className='chat-msg '+type;el.textContent=text;
+  messages().appendChild(el);messages().scrollTop=messages().scrollHeight;return el;
+ }
+ function addLinks(host,items,extraClass){
+  const links=(items||[]).filter(x=>safeHref(x.href||x.url)).slice(0,3);
+  if(!links.length)return;
+  const nav=document.createElement('div');nav.className=extraClass||'chat-links';
+  links.forEach(x=>{
+   const a=document.createElement('a');a.textContent=x.label||x.title||'Consulter la source';
+   a.href=safeHref(x.href||x.url);
+   if(a.href.startsWith('https://')&&!a.href.includes(location.host)){
+    a.target='_blank';a.rel='noopener noreferrer';
+   }
+   nav.appendChild(a);
+  });
+  host.appendChild(nav);
+ }
+ function renderAnswer(result){
+  const el=append('bot',result.text);
+  if(result.bullets?.length){
+   const ul=document.createElement('ul');
+   result.bullets.forEach(t=>{const li=document.createElement('li');li.textContent=t;ul.appendChild(li)});
+   el.appendChild(ul);
   }
-  function ensureData(){
-    addScript('assets/study-topics.js?v=course12','data-chat-topics');
-    addScript('assets/clinical-library.js','data-chat-clinical');
+  addLinks(el,result.links,'chat-links');
+  if(result.sources?.length){
+   const sources=document.createElement('details');sources.className='chat-sources';
+   const summary=document.createElement('summary');summary.textContent='Sources utilisées';sources.appendChild(summary);
+   addLinks(sources,result.sources.map(s=>({label:s.title||s.label,url:s.url||s.href})),'chat-links');
+   el.appendChild(sources);
   }
-  function build(){
-    if(document.getElementById('ifsi-chat-shell'))return;
-    ensureData();
-    const shell=document.createElement('div');shell.id='ifsi-chat-shell';shell.className='ifsi-chat-shell';
-    shell.innerHTML='<section class="ifsi-chat-panel" role="dialog" aria-label="Assistant IFSI">'+
-      '<div class="ifsi-chat-head"><div><strong>Assistant IFSI</strong><span>Recherche et orientation dans la plateforme</span></div><button class="ifsi-chat-close" id="ifsi-chat-close" aria-label="Fermer">✕</button></div>'+
-      '<div class="ifsi-chat-messages" id="ifsi-chat-messages"></div>'+
-      '<div class="chat-suggestions" id="chat-suggestions"></div>'+
-      '<form class="ifsi-chat-form" id="ifsi-chat-form"><input id="ifsi-chat-input" autocomplete="off" placeholder="Ex. Je veux réviser l’hygiène…"><button>Envoyer</button></form>'+
-      '<div class="chat-disclaimer">Assistant local : il s’appuie sur les contenus présents dans le site et n’invente pas de conseil médical personnalisé.</div>'+
-      '</section>';
-    document.body.appendChild(shell);
-    shell.addEventListener('click',e=>{if(e.target===shell)close()});
-    document.getElementById('ifsi-chat-close').onclick=close;
-    document.getElementById('ifsi-chat-form').addEventListener('submit',e=>{e.preventDefault();const input=document.getElementById('ifsi-chat-input'),q=input.value.trim();if(!q)return;addUser(q);input.value='';respond(q)});
-    suggestions(['Je veux réviser un chapitre','Trouver un quiz','Voir une carte mentale']);
-    addBot('Bonjour. Dis-moi ce que tu veux travailler et je te renvoie vers le bon endroit du site.');
-  }
-  function messages(){return document.getElementById('ifsi-chat-messages')}
-  function addUser(text){const d=document.createElement('div');d.className='chat-msg user';d.textContent=text;messages().appendChild(d);messages().scrollTop=messages().scrollHeight}
-  function addBot(html){const d=document.createElement('div');d.className='chat-msg bot';d.innerHTML=html;messages().appendChild(d);messages().scrollTop=messages().scrollHeight}
-  function suggestions(items){
-    const box=document.getElementById('chat-suggestions');if(!box)return;
-    box.innerHTML=items.map(x=>'<button type="button" data-chat-suggest="'+safe(x)+'">'+safe(x)+'</button>').join('');
-    box.querySelectorAll('[data-chat-suggest]').forEach(b=>b.onclick=()=>{addUser(b.dataset.chatSuggest);respond(b.dataset.chatSuggest)})
-  }
-  function topicLinks(t){
-    const links=[];
-    links.push('<a href="cours.html?id='+encodeURIComponent(t.id)+'">Lire le cours</a>');
-    if(t.ue)links.push('<a href="revision.html?ue='+encodeURIComponent(t.ue)+'">Réviser les fiches</a>');
-    if(t.quizTopic)links.push('<a href="quiz.html?topic='+encodeURIComponent(t.quizTopic)+'">Faire le quiz</a>');
-    if(t.mapId)links.push('<a href="cartes-mentales.html?id='+encodeURIComponent(t.mapId)+'">Voir la carte mentale</a>');
-    if(t.learningId)links.push('<a href="apprentissage.html?module='+encodeURIComponent(t.learningId)+'">Apprentissage guidé</a>');
-    return links.join('<br>')
-  }
-  function findTopics(q){
-    if(typeof STUDY_TOPICS==='undefined')return[];
-    const nq=n(q),words=nq.split(/\s+/).filter(w=>w.length>2);
-    return STUDY_TOPICS.map(t=>{
-      const hay=n(t.title+' '+t.keywords+' '+t.ue+' domaine '+t.domain);
-      const score=words.reduce((s,w)=>s+(hay.includes(w)?1:0),0)+(hay.includes(nq)?3:0);
-      return {t,score}
-    }).filter(x=>x.score>0).sort((a,b)=>b.score-a.score).slice(0,3).map(x=>x.t)
-  }
-  function findClinical(q){
-    try{
-      if(typeof CLINICAL_LIBRARY==='undefined')return[];
-      const nq=n(q),words=nq.split(/\s+/).filter(w=>w.length>2);
-      return CLINICAL_LIBRARY.map(x=>{
-        const hay=n(x.title+' '+x.summary+' '+x.tags.join(' ')+' '+x.keyPoints.join(' '));
-        const score=words.reduce((s,w)=>s+(hay.includes(w)?1:0),0)+(hay.includes(nq)?3:0);
-        return {x,score}
-      }).filter(v=>v.score>0).sort((a,b)=>b.score-a.score).slice(0,2).map(v=>v.x)
-    }catch{return[]}
-  }
-  function respond(q){
-    const nq=n(q);
-    if(/bonjour|salut|hello|coucou/.test(nq)){addBot('Bonjour. Tu peux me demander un chapitre, un quiz, une carte mentale, de l’anatomie, un ECOS ou un calcul.');return}
-    if(/quiz|qcm|question/.test(nq)&&!findTopics(q).length){addBot('Tu peux lancer un quiz directement ici :<br><a href="quiz.html">Ouvrir les quiz</a>');return}
-    if(/carte mentale|mindmap|schema|schéma/.test(nq)&&!findTopics(q).length){addBot('Les cartes mentales sont regroupées ici :<br><a href="cartes-mentales.html">Ouvrir les cartes mentales</a>');return}
-    if(/anatomie|organe|corps/.test(nq)){addBot('Pour l’anatomie :<br><a href="anatomie.html">Ouvrir l’anatomie</a>');return}
-    if(/ecos|cas clinique|simulation/.test(nq)){addBot('Pour t’entraîner sur des situations cliniques :<br><a href="ecos.html">Ouvrir les ECOS</a>');return}
-    if(/calcul|dose|debit|débit|perfusion/.test(nq)){addBot('Pour les calculs infirmiers :<br><a href="calculs.html">Ouvrir les calculs</a>');return}
-    if(/stage|terrain/.test(nq)){addBot('Pour préparer et suivre ton stage :<br><a href="stage.html">Ouvrir l’espace stage</a>');return}
-
-    const clinical=findClinical(q);
-    if(clinical.length){
-      const x=clinical[0];
-      addBot('<strong>'+safe(x.title)+'</strong><br>'+safe(x.summary)+'<br><br>'+x.keyPoints.slice(0,4).map(k=>'• '+safe(k)).join('<br>')+(x.sourceUrl?'<br><a href="'+x.sourceUrl+'" target="_blank" rel="noopener">Voir la source</a>':''));
-      return
-    }
-    const topics=findTopics(q);
-    if(topics.length){
-      if(topics.length===1){const t=topics[0];addBot('J’ai trouvé <strong>'+safe(t.title)+'</strong>.<br>'+topicLinks(t));return}
-      addBot('J’ai trouvé plusieurs chapitres proches :<br>'+topics.map(t=>'<a href="etudier.html?q='+encodeURIComponent(t.title)+'">'+safe(t.title)+'</a>').join('<br>'));return
-    }
-    addBot('Je ne trouve pas cette notion dans les contenus actuellement indexés. Essaie la barre de recherche du header ou <a href="bibliotheque.html">ouvre la bibliothèque</a>. Pour une question médicale non couverte par le site, je préfère ne pas inventer de réponse.')
-  }
-  function open(){build();document.getElementById('ifsi-chat-shell').classList.add('open');setTimeout(()=>document.getElementById('ifsi-chat-input').focus(),0)}
-  function close(){const s=document.getElementById('ifsi-chat-shell');if(s)s.classList.remove('open')}
-  window.initIfsiChat=build;window.openIfsiChat=open;window.closeIfsiChat=close;
-  build();
-  if(window.__openIfsiChatOnReady){window.__openIfsiChatOnReady=false;open()}
+  if(result.topicId)lastTopic=result.topicId;
+ }
+ function suggestions(items){
+  const box=document.getElementById('chat-suggestions');if(!box)return;
+  box.textContent='';
+  items.forEach(text=>{
+   const btn=document.createElement('button');btn.type='button';btn.textContent=text;
+   btn.addEventListener('click',()=>ask(text));
+   box.appendChild(btn);
+  });
+ }
+ function ask(text){
+  const q=String(text||'').trim();
+  if(!q)return;
+  append('user',q);
+  const field=document.getElementById('ifsi-chat-input');if(field)field.value='';
+  const loading=append('bot chat-loading','Je cherche dans les cours…');
+  queue=queue.then(async()=>{
+   try{
+    await ready;
+    const result=window.IFSI_CHAT_ENGINE.ask(q,{topicId:lastTopic},window.IFSI_CHAT_KNOWLEDGE);
+    loading.remove();
+    renderAnswer(result);
+   }catch(e){
+    loading.remove();
+    append('bot','Je ne peux pas consulter les cours pour le moment. Vérifie la connexion puis recharge la page. Je préfère ne pas donner de réponse approximative.');
+   }
+  });
+ }
+ function close(){
+  const shell=document.getElementById('ifsi-chat-shell');
+  if(shell){shell.classList.remove('open');const button=document.getElementById('header-chat-btn');if(button)button.focus()}
+ }
+ function build(){
+  if(document.getElementById('ifsi-chat-shell'))return;
+  if(!document.querySelector('link[data-chat-style]')){const css=document.createElement('link');css.rel='stylesheet';css.href='assets/chat.css?v=chat16';css.dataset.chatStyle='1';document.head.appendChild(css)}
+  const shell=document.createElement('div');shell.id='ifsi-chat-shell';shell.className='ifsi-chat-shell';
+  shell.innerHTML='<section class="ifsi-chat-panel" role="dialog" aria-label="Assistant de révision IFSI" aria-modal="true">'+
+   '<div class="ifsi-chat-head"><div><strong>Assistant IFSI</strong><span>Réponses tirées des cours et sources du site</span></div>'+
+   '<button class="ifsi-chat-close" id="ifsi-chat-close" aria-label="Fermer l’assistant">✕</button></div>'+
+   '<div class="ifsi-chat-messages" id="ifsi-chat-messages" role="log" aria-live="polite" aria-relevant="additions"></div>'+
+   '<div class="chat-suggestions" id="chat-suggestions"></div>'+
+   '<form class="ifsi-chat-form" id="ifsi-chat-form"><input id="ifsi-chat-input" type="search" autocomplete="off" aria-label="Poser une question à l’assistant" placeholder="Pose ta question sur un cours…" required>'+
+   '<button type="submit">Envoyer</button></form>'+
+   '<p class="chat-disclaimer">Assistant local de recherche, non génératif : il ne répond qu’avec les informations présentes sur le site. Ne pas utiliser pour décider d’un soin réel.</p>'+
+   '</section>';
+  document.body.appendChild(shell);
+  shell.addEventListener('click',e=>{if(e.target===shell)close()});
+  document.getElementById('ifsi-chat-close').addEventListener('click',close);
+  document.getElementById('ifsi-chat-form').addEventListener('submit',e=>{
+   e.preventDefault();ask(document.getElementById('ifsi-chat-input').value)
+  });
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('open'))close()});
+  append('bot','Pose une question précise sur tes cours IFSI. Je cherche une explication qui correspond à ta question et j’indique mes sources. Si le contenu n’est pas disponible, je te le dirai.');
+  suggestions(['Quels sont les signes d’un AVC ?', 'Explique-moi la BPCO', 'Quels sont les cinq moments de l’hygiène des mains ?']);
+ }
+ function open(){
+  build();document.getElementById('ifsi-chat-shell').classList.add('open');
+  document.getElementById('ifsi-chat-input').focus();
+ }
+ window.initIfsiChat=build;
+ window.openIfsiChat=open;
+ window.closeIfsiChat=close;
+ build();
+ if(window.__openIfsiChatOnReady){window.__openIfsiChatOnReady=false;open()}
 })();

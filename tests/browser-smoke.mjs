@@ -47,6 +47,40 @@ await smoke('desktop-header',{width:1440,height:900},async page=>{
  await page.locator('.global-more summary').click();
  await page.locator('.global-more-menu a[href="parcours.html"]').waitFor();
 });
+await smoke('chat-answers',{width:1280,height:850},async page=>{
+ await visit(page,'/index.html');
+ await page.locator('#header-chat-btn').click();
+ await page.locator('#ifsi-chat-shell.open').waitFor();
+ const field=page.locator('#ifsi-chat-input');
+ await field.fill('Quels sont les signes d’un AVC ?');
+ await field.press('Enter');
+ await page.locator('.chat-msg.bot:has-text("asymétrie")').waitFor({timeout:10000});
+ const answer=page.locator('.chat-msg.bot:has-text("asymétrie")').last();
+ assert.ok((await answer.innerText()).includes('Lire le cours complet'));
+ assert.ok((await answer.innerText()).includes('Sources utilisées'));
+ await field.fill('Explique-moi la BPCO');
+ await field.press('Enter');
+ await page.locator('.chat-msg.bot:has-text("obstruction durable")').waitFor({timeout:10000});
+ await field.fill('Et quels sont les symptômes ?');
+ await field.press('Enter');
+ await page.locator('.chat-msg.bot:has-text("expectorations")').waitFor({timeout:10000});
+ await field.fill('Quelle est la capitale du Japon ?');
+ await field.press('Enter');
+ await page.locator('.chat-msg.bot:has-text("Je ne trouve pas")').waitFor({timeout:10000});
+ await field.fill('Quelle dose de morphine injecter à mon patient ?');
+ await field.press('Enter');
+ await page.locator('.chat-msg.bot:has-text("Je ne peux pas calculer")').waitFor({timeout:10000});
+});
+await smoke('mobile-chat',{width:390,height:844},async page=>{
+ await visit(page,'/index.html');
+ await page.locator('#header-chat-btn').click();
+ await page.locator('#ifsi-chat-shell.open').waitFor();
+ await page.locator('#ifsi-chat-input').fill('Quels sont les cinq moments de l’hygiène des mains ?');
+ await page.locator('#ifsi-chat-input').press('Enter');
+ await page.locator('.chat-msg.bot:has-text("Avant de toucher un patient")').waitFor({timeout:10000});
+ await page.locator('#ifsi-chat-close').click();
+ assert.equal(await page.locator('#ifsi-chat-shell.open').count(),0);
+});
 await smoke('mobile-header',{width:390,height:844},async page=>{
  await visit(page,'/index.html');
  assert.equal(await page.locator('.global-mobile-menu').count(),0);

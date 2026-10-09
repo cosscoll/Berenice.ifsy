@@ -1,0 +1,18 @@
+/* Réponses sourcées et lisibles — assistant de révision */
+.ifsi-chat-panel{width:min(450px,calc(100vw - 36px))}
+.chat-msg.bot{max-width:94%;line-height:1.65;white-space:normal}
+.chat-msg.user{max-width:91%;overflow-wrap:anywhere}
+.chat-msg.bot ul{padding-left:19px;margin:10px 0 4px}
+.chat-msg.bot li{margin:6px 0}
+.chat-msg .chat-links{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.chat-msg .chat-links a{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 9px;font-weight:600;font-size:12px;text-decoration:none;color:var(--pine)}
+.chat-msg .chat-links a:hover{text-decoration:underline}
+.chat-msg.bot .chat-sources{margin-top:11px;font-size:11px;color:var(--ink-soft);border-top:1px solid var(--line);padding-top:9px}
+.chat-msg.bot .chat-sources summary{cursor:pointer}
+.chat-msg.bot .chat-sources .chat-links a{font-size:11px}
+.chat-msg.bot.chat-loading{font-style:italic;color:var(--ink-soft)}
+.ifsi-chat-shell .chat-suggestions button{background:#fff;border:1px solid var(--line);border-radius:8px;line-height:1.35}
+.ifsi-chat-shell .chat-suggestions button:hover{border-color:var(--pine)}
+.ifsi-chat-shell .chat-disclaimer{line-height:1.4;margin:0;padding:8px 14px 10px}
+.ifsi-chat-shell .ifsi-chat-form input{min-width:0}
+@media(max-width:620px){.ifsi-chat-panel{top:74px;right:8px;left:8px;bottom:8px;width:auto}.chat-msg.bot{max-width:98%}}
