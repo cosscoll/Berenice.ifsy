@@ -15,6 +15,8 @@ const HEADER_MORE=[
  {id:'calculs',href:'calculs.html',label:'Calculs infirmiers',icon:'lightbulb'},
  {id:'apprentissage',href:'apprentissage.html',label:'Apprentissage guidé',icon:'lightbulb'},
  {id:'bibliotheque',href:'bibliotheque.html',label:'Bibliothèque',icon:'link'},
+ {id:'programme',href:'programme.html',label:'Programme 2026 détaillé',icon:'book'},
+ {id:'planning',href:'planning.html',label:'Planning de révision',icon:'check'},
  {id:'referentiel',href:'referentiel.html',label:'Référentiel 2026',icon:'book'},
  {id:'ressources',href:'ressources.html',label:'Ressources',icon:'link'},
  {id:'todo',href:'todo.html',label:'Mes tâches',icon:'check'},
@@ -28,6 +30,8 @@ const SEARCH_BASE=[
  {label:'Cartes mentales',kind:'Page',href:'cartes-mentales.html',keywords:'mindmap synthèse visuelle'},
  {label:'Progression',kind:'Page',href:'progression.html',keywords:'statistiques résultats scores'},
  {label:'Mon parcours',kind:'Page',href:'parcours.html',keywords:'annee année progression etapes cours epreuves evaluation niveaux'},
+ {label:'Programme 2026 détaillé',kind:'Page',href:'programme.html',keywords:'referentiel quinze ue ects cinq domaines programme officiel'},
+ {label:'Planning de révision',kind:'Page',href:'planning.html',keywords:'planning aujourd hui cette semaine revision espacee apprendre quotidien'},
  {label:'Anatomie',kind:'Page',href:'anatomie.html',keywords:'organe système corps'},
  {label:'Cas pratiques',kind:'Page',href:'situations.html',keywords:'situations cliniques fictives simulation entrainement decisions raisonnement'},
  {label:'ECOS',kind:'Page',href:'ecos.html',keywords:'cas clinique simulation patient'},
@@ -39,12 +43,21 @@ function iconFor(name){return window.ICONS&&ICONS[name]?ICONS[name]:''}
 function normSearch(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
 function ensureHeaderAssets(){
  if(!document.querySelector('link[data-ifsi-ux]')){
-  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=pathway14';l.dataset.ifsiUx='1';document.head.appendChild(l)
+  const l=document.createElement('link');l.rel='stylesheet';l.href='assets/ux.css?v=big17';l.dataset.ifsiUx='1';document.head.appendChild(l)
  }
  if(!window.STUDY_TOPICS&&!document.querySelector('script[data-study-topics]')){
   const s=document.createElement('script');s.src='assets/study-topics.js?v=course12';s.dataset.studyTopics='1';document.head.appendChild(s)
  }
- if(!document.querySelector('script[data-ifsi-chat]')){
+ if(!document.querySelector('link[rel="manifest"]')){
+  const link=document.createElement('link');link.rel='manifest';link.href='manifest.webmanifest';document.head.appendChild(link);
+ }
+ if(!document.querySelector('meta[name="theme-color"]')){
+  const meta=document.createElement('meta');meta.name='theme-color';meta.content='#176a5d';document.head.appendChild(meta);
+ }
+ if(!document.querySelector('script[data-ifsi-pwa]')){
+  const pwa=document.createElement('script');pwa.src='assets/pwa.js?v=big17';pwa.dataset.ifsiPwa='1';document.head.appendChild(pwa);
+ }
+  if(!document.querySelector('script[data-ifsi-chat]')){
   const s=document.createElement('script');s.src='assets/ifsi-chat.js?v=chat16';s.dataset.ifsiChat='1';document.head.appendChild(s)
  }
 }
@@ -72,8 +85,8 @@ function buildHeader(activeId){
  const primary=HEADER_PRIMARY.map(i=>'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>').join('');
  const grouped=[
   {heading:'S’entraîner',ids:['situations','anatomie','ecos','calculs','apprentissage']},
-  {heading:'Mon espace',ids:['parcours','stage','todo']},
-  {heading:'Ressources',ids:['bibliotheque','referentiel','ressources','methodologie','confidentialite']}
+  {heading:'Mon espace',ids:['parcours','planning','stage','todo']},
+  {heading:'Ressources',ids:['bibliotheque','programme','referentiel','ressources','methodologie','confidentialite']}
  ];
  const more=grouped.map(group=>'<div class="global-more-heading">'+group.heading+'</div>'+group.ids.map(id=>{
   const i=HEADER_MORE.find(item=>item.id===id);return i?'<a href="'+i.href+'" class="'+(i.id===activeId?'active':'')+'">'+iconFor(i.icon)+'<span>'+i.label+'</span></a>':''
@@ -84,7 +97,9 @@ function buildHeader(activeId){
  header.id='ifsi-global-header';
  header.className='global-header';
  // Important : ne jamais insérer de navigation mobile masquée par CSS au chargement.
+ const main=document.querySelector('.content-column main');if(main&&!main.id)main.id='ifsi-main-content';
  header.innerHTML=
+  '<a class="ifsi-skip-link" href="#ifsi-main-content">Aller au contenu</a>'+ 
   '<div class="global-header-inner">'+
    '<a class="global-brand" href="index.html"><span class="global-brand-mark">I</span><span class="global-brand-name">IFSI Platform</span></a>'+
    '<nav class="global-nav" aria-label="Navigation principale">'+primary+
@@ -157,7 +172,7 @@ function renderNav(activeId){
   const footer=document.createElement('footer');
   footer.id='ifsi-site-footer';
   footer.className='ifsi-site-footer';
-  footer.innerHTML='<div class="ifsi-site-footer-inner"><span>IFSI Platform · Version bêta · Support d’étude, non destiné aux décisions de soin.</span><nav aria-label="Informations du site"><a href="methodologie.html">Sources & méthode</a><a href="confidentialite.html">Confidentialité</a><a href="referentiel.html">Référentiel 2026</a></nav></div>';
+  footer.innerHTML='<div class="ifsi-site-footer-inner"><span>IFSI Platform · Version bêta · Support d’étude, non destiné aux décisions de soin.</span><nav aria-label="Informations du site"><a href="methodologie.html">Sources & méthode</a><a href="confidentialite.html">Confidentialité</a><a href="programme.html">Programme 2026</a><a href="planning.html">Mon planning</a></nav></div>';
   column.appendChild(footer);
  }
 }

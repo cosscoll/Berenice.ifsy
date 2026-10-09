@@ -121,6 +121,28 @@ verify(fs.existsSync(path.join(root,'assets/pathway.css')),'Styles du parcours m
 verify(fs.existsSync(path.join(root,'situations.html')),'Page des situations manquante');
 verify(fs.existsSync(path.join(root,'robots.txt')),'robots.txt manquant');
 verify(fs.existsSync(path.join(root,'sitemap.xml')),'sitemap.xml manquant');
+const syllabusCtx=vm.createContext({window:{}});
+vm.runInContext(read('assets/referentiel-data.js'),syllabusCtx);
+vm.runInContext(read('assets/deep-dive-data.js'),syllabusCtx);
+const syllabus=syllabusCtx.window.IFSI_2026_MATRIX;
+const deep=syllabusCtx.window.IFSI_DEEP_DIVES;
+verify(syllabus.units.length===15,'La cartographie doit contenir 15 UE officielles');
+verify(syllabus.units.reduce((sum,ue)=>sum+ue.ects,0)===114,'Le total des ECTS théoriques doit être égal à 114');
+verify(syllabus.structure.ects===180&&syllabus.structure.clinicalWeeks===66,'Les repères du référentiel 2026 sont incohérents');
+for(const ue of syllabus.units){
+ verify(['A','B','C','D','E'].includes(ue.domain),'Domaine officiel invalide : '+ue.id);
+ verify(Array.isArray(ue.gaps)&&ue.gaps.length>0,'Une UE sans manques décrits doit être revue : '+ue.id);
+ for(const id of ue.courseIds)verify(courseIds.has(id),'Cours introuvable dans le référentiel : '+id);
+}
+for(const course of courses){
+ const ext=deep[course.id];
+ verify(!!ext&&ext.focus&&ext.reasoning&&ext.trap&&ext.task,'Atelier de raisonnement absent : '+course.id);
+}
+verify(fs.existsSync(path.join(root,'manifest.webmanifest')),'Manifeste PWA manquant');
+verify(fs.existsSync(path.join(root,'sw.js')),'Service worker manquant');
+verify(fs.existsSync(path.join(root,'assets/pwa.js')),'Enregistrement PWA absent');
+verify(fs.existsSync(path.join(root,'programme.html')),'Page programme absente');
+verify(fs.existsSync(path.join(root,'planning.html')),'Page planning absente');
 verify(fs.existsSync(path.join(root,'cours.html')),'Page des cours manquante');
 
 if(errors.length){

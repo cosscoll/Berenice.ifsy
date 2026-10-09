@@ -1,0 +1,30 @@
+{
+  "name": "IFSI Platform — Révisions infirmières",
+  "short_name": "IFSI Révisions",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#176a5d",
+  "background_color": "#f4f7f6",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "assets/ifsi-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/ifsi-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/ifsi-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

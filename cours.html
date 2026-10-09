@@ -12,8 +12,8 @@
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="assets/style.css">
 <link rel="stylesheet" href="assets/v2.css">
-<link rel="stylesheet" data-ifsi-ux="course11" href="assets/ux.css?v=pathway14">
-</head>
+<link rel="stylesheet" data-ifsi-ux="course11" href="assets/ux.css?v=big17">
+<style>.course-deep-dive{border:1px solid var(--line);border-radius:15px;margin:25px 0;background:var(--pine-soft);overflow:hidden}.course-deep-dive>summary{cursor:pointer;padding:19px 20px;display:grid;gap:5px;font-size:17px;font-weight:700}.course-deep-dive>summary small{font-size:12px;color:var(--ink-soft);font-weight:400}.course-deep-content{padding:5px 21px 22px;background:#fff;border-top:1px solid var(--line)}.course-deep-content h2{font-size:17px;margin:20px 0 9px}.course-deep-content p{font-size:15px;line-height:1.7;margin:0;color:var(--ink)}.course-deep-dive>summary:focus-visible{outline:3px solid var(--pine);outline-offset:-3px}</style></head>
 <body>
 <div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
 <div class="course-breadcrumb"><a href="etudier.html">Réviser</a> <span aria-hidden="true">›</span> <span id="crumb-title">Cours</span></div>
@@ -22,9 +22,9 @@
 <script src="assets/error-reporter.js"></script>
 <script src="assets/icons.js"></script>
 <script src="assets/study-topics.js?v=course12"></script>
-<script src="assets/nav.js?v=pathway14"></script>
+<script src="assets/nav.js?v=big17"></script>
 <script src="assets/v2-core.js"></script>
-<script src="assets/courses-data.js?v=course12"></script><script src="assets/cases-data.js?v=pathway14"></script>
+<script src="assets/courses-data.js?v=course12"></script><script src="assets/deep-dive-data.js?v=big17"></script><script src="assets/cases-data.js?v=pathway14"></script>
 <script src="assets/nurse-avatar.js"></script>
 <script>
 renderNav('etudier');
@@ -78,6 +78,9 @@ function renderCourse(c){
  '<p class="muted small" id="course-progress-label" role="status"></p></header>'+
  '<div class="course-layout"><article class="course-main">'+
  c.sections.map((s,i)=>'<section class="course-section" id="part-'+i+'"><div class="course-step">Partie '+(i+1)+' / '+c.sections.length+'</div><h2>'+escapeText(s[0])+'</h2><p>'+escapeText(s[1])+'</p></section>').join('')+
+ '<details class="course-deep-dive"><summary><span>Approfondir ce chapitre</span><small>Raisonnement, pièges et exercice complémentaire</small></summary><div class="course-deep-content">'+
+ (window.IFSI_DEEP_DIVES?.[c.id]?'<h2>Le point essentiel</h2><p>'+escapeText(window.IFSI_DEEP_DIVES[c.id].focus)+'</p><h2>Raisonner sur une situation</h2><p>'+escapeText(window.IFSI_DEEP_DIVES[c.id].reasoning)+'</p><h2>Erreur fréquente à éviter</h2><p>'+escapeText(window.IFSI_DEEP_DIVES[c.id].trap)+'</p><h2>Exercice à réaliser</h2><p>'+escapeText(window.IFSI_DEEP_DIVES[c.id].task)+'</p>':'<p>Atelier complémentaire en préparation.</p>')+
+ '</div></details>'+
  '<section class="course-section course-scenario"><div class="course-step">Mise en pratique</div><h2>À toi de raisonner</h2><p>'+escapeText(c.scenario)+'</p><p class="muted small">Exercice fictif d’analyse. Aucune décision clinique réelle ne doit être prise à partir de cet exemple.</p></section>'+
  '<section class="course-section course-selfcheck" id="check"><div class="course-step">Vérification des acquis</div><h2>As-tu compris l’essentiel ?</h2><p>'+escapeText(c.check.question)+'</p><div class="course-answers">'+c.check.choices.map((opt,i)=>'<button type="button" class="course-answer" data-answer="'+i+'">'+escapeText(opt)+'</button>').join('')+'</div><div id="course-feedback" aria-live="polite"></div></section>'+
  '<section class="course-section"><h2>À retenir</h2><ul>'+c.takeaway.map(t=>'<li>'+escapeText(t)+'</li>').join('')+'</ul><button type="button" class="v2-button" id="mark-read" aria-pressed="false">J’ai lu et compris le cours</button></section>'+

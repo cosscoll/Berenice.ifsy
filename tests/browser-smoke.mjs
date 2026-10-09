@@ -147,6 +147,48 @@ await smoke('mobile-parcours',{width:390,height:844},async page=>{
  await page.locator('.pathway-tabs button').first().waitFor();
  assert.ok(await page.locator('.pathway-focus').isVisible());
 });
+await smoke('desktop-programme',{width:1440,height:900},async page=>{
+ await visit(page,'/programme.html');
+ await page.locator('.program-unit').first().waitFor();
+ assert.equal(await page.locator('.program-unit').count(),15);
+ await page.locator('.program-tabs button[data-d="E"]').click();
+ assert.equal(await page.locator('.program-unit').count(),3);
+ await page.locator('.program-gaps').first().locator('summary').click();
+ assert.ok(await page.locator('.program-gaps').first().locator('li').count()>0);
+});
+await smoke('mobile-programme',{width:390,height:844},async page=>{
+ await visit(page,'/programme.html');
+ await page.locator('.program-tabs button[data-d="B"]').click();
+ assert.ok(await page.locator('.program-unit').count()>0);
+});
+await smoke('desktop-planning',{width:1280,height:850},async page=>{
+ await visit(page,'/planning.html');
+ await page.locator('.plan-main-task').waitFor();
+ await page.locator('#plan-goal').selectOption('30');
+ const saved=await page.evaluate(()=>localStorage.getItem('ifsi_daily_goal_minutes_v1'));
+ assert.equal(saved,'30');
+ assert.equal(await page.locator('.plan-day').count(),7);
+});
+await smoke('mobile-planning',{width:390,height:844},async page=>{
+ await visit(page,'/planning.html');
+ assert.ok(await page.locator('.plan-main-task').isVisible());
+ assert.equal(await page.locator('.plan-day').count(),7);
+});
+await smoke('course-deep-dive',{width:1280,height:850},async page=>{
+ await visit(page,'/cours.html?id=neurologie');
+ await page.locator('.course-deep-dive summary').click();
+ assert.ok(await page.locator('.course-deep-content').isVisible());
+ assert.ok((await page.locator('.course-deep-content').innerText()).includes('Erreur fréquente'));
+});
+await smoke('offline-course',{width:1280,height:850},async page=>{
+ await visit(page,'/cours.html?id=hygiene');
+ await page.waitForFunction(()=>!!navigator.serviceWorker?.controller,{timeout:15000});
+ assert.ok(await page.locator('link[rel="manifest"]').count()>0);
+ await page.context().setOffline(true);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.locator('.course-head h1').waitFor({timeout:10000});
+ await page.context().setOffline(false);
+});
 await browser.close();
 if(failures)process.exitCode=1;
 else console.log('Recette navigateur réussie sur ordinateur et mobile.');

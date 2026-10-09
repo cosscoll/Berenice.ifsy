@@ -20,6 +20,8 @@ jobs:
         run: node tests/verify-site.mjs
       - name: Vérifier la pertinence du chatbot
         run: node tests/chat-relevance.mjs
+      - name: Vérifier la PWA et ses ressources publiques
+        run: node tests/pwa-check.mjs
   browser:
     runs-on: ubuntu-latest
     timeout-minutes: 14

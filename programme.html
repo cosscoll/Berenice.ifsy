@@ -1,0 +1,43 @@
+<!doctype html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Programme infirmier 2026 : les 15 unités d’enseignement | IFSI Platform</title>
+<meta name="description" content="Cartographie des 15 unités d'enseignement du référentiel infirmier 2026, leurs domaines, cours de révision disponibles et enseignements à approfondir.">
+<link rel="canonical" href="https://cosscoll.github.io/Berenice.ifsy/programme.html"><meta name="robots" content="index,follow">
+<meta property="og:type" content="article"><meta property="og:title" content="Référentiel 2026 : 15 unités d'enseignement"><meta property="og:description" content="Comparer les cours disponibles avec les unités d'enseignement et repérer ce qui manque.">
+<link rel="stylesheet" href="assets/style.css"><link rel="stylesheet" href="assets/v2.css"><link rel="stylesheet" data-ifsi-ux="big17" href="assets/ux.css?v=big17"><link rel="stylesheet" href="assets/programme.css?v=big17">
+</head><body>
+<div class="app-shell"><aside class="sidebar" id="sidebar"></aside><div class="content-column"><main>
+<nav class="course-breadcrumb" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a> › <span>Référentiel 2026</span></nav>
+<header class="program-head"><span class="pill">Référentiel officiel · Arrêté du 20 février 2026</span><h1>Comprendre le programme infirmier 2026</h1>
+<p>Retrouve les unités d'enseignement officielles et les cours déjà disponibles sur la plateforme. Cette cartographie est un outil pédagogique <strong>non exhaustif</strong> : les exercices du site ne constituent pas une validation des compétences.</p>
+<p class="program-source"><a href="https://www.legifrance.gouv.fr/loda/article_lc/LEGIARTI000053570499/" target="_blank" rel="noopener noreferrer">Consulter le référentiel de formation officiel (annexe III)</a></p></header>
+<section class="program-facts" aria-label="Repères du cursus"><div><strong>5</strong><span>domaines</span></div><div><strong>15</strong><span>UE théoriques</span></div><div><strong>6</strong><span>semestres</span></div><div><strong>180</strong><span>ECTS au total</span></div><div><strong>66</strong><span>semaines de stage</span></div></section>
+<div class="program-alert"><strong>Ce que signifient ces repères</strong><p>La formation compte 180 ECTS, dont 114 ECTS d’enseignements théoriques et pratiques et 66 ECTS d'enseignement clinique. Les cours proposés ici ne représentent pas nécessairement l’ensemble de ces ECTS. Le parcours « Année 1, 2, 3 » du site est une proposition de révision, et non une maquette officielle par semestre.</p></div>
+<section class="program-index" aria-label="Choisir un domaine"><h2>Explorer les domaines</h2><div class="program-tabs" id="program-tabs"></div></section>
+<div id="program-sections"></div>
+<section class="program-bottom"><h2>Comment utiliser cette cartographie ?</h2><p>Commence par un cours existant, puis regarde les enseignements encore absents. Les cours et leurs sources doivent être complétés et relus par des professionnels avant de pouvoir prétendre couvrir le référentiel.</p><a href="etudier.html" class="v2-button">Voir tous les cours</a> <a href="methodologie.html" class="v2-button secondary">Méthodologie et limites</a></section>
+</main></div></div>
+<script src="assets/error-reporter.js"></script><script src="assets/icons.js"></script><script src="assets/nav.js?v=big17"></script><script src="assets/v2-core.js"></script><script src="assets/courses-data.js?v=course12"></script><script src="assets/referentiel-data.js?v=big17"></script><script src="assets/nurse-avatar.js"></script>
+<script>
+renderNav('programme');
+const m=window.IFSI_2026_MATRIX;
+const tabs=document.getElementById('program-tabs'),sections=document.getElementById('program-sections');
+const esc=safeText;
+let current='all';
+const unitCard=u=>{
+ const courses=u.courseIds.map(id=>IFSI_COURSES.find(c=>c.id===id)).filter(Boolean);
+ return '<article class="program-unit"><div class="program-unit-top"><div><span class="pill">UE '+esc(u.id)+'</span><h3>'+esc(u.title)+'</h3></div><span class="program-ects">'+u.ects+' ECTS</span></div>'+
+ '<p class="program-availability">'+(courses.length?courses.length+' cours introductif'+(courses.length>1?'s':'')+' disponible'+(courses.length>1?'s':''):'Aucun cours spécifique actuellement')+'</p>'+
+ (courses.length?'<div class="program-links">'+courses.map(c=>'<a href="cours.html?id='+encodeURIComponent(c.id)+'">'+esc(c.title)+' →</a>').join('')+'</div>':'')+
+ '<details class="program-gaps"><summary>Enseignements à approfondir ('+u.gaps.length+')</summary><ul>'+u.gaps.map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul></details></article>';
+};
+function render(){
+ tabs.innerHTML='<button type="button" data-d="all" class="'+(current==='all'?'active':'')+'" aria-pressed="'+(current==='all')+'">Tous les domaines</button>'+
+ Object.keys(m.domains).map(d=>'<button type="button" data-d="'+d+'" class="'+(current===d?'active':'')+'" aria-pressed="'+(current===d)+'">Domaine '+d+'</button>').join('');
+ sections.innerHTML=Object.entries(m.domains).filter(([d])=>current==='all'||current===d).map(([domain,title])=>{
+  const units=m.units.filter(u=>u.domain===domain);
+  return '<section class="program-domain"><h2>Domaine '+domain+' <span>'+esc(title)+'</span></h2><p class="program-domain-meta">'+units.length+' unités d’enseignement • '+units.reduce((sum,u)=>sum+u.ects,0)+' ECTS</p><div class="program-grid">'+units.map(unitCard).join('')+'</div></section>'
+ }).join('');
+ tabs.querySelectorAll('[data-d]').forEach(button=>button.addEventListener('click',()=>{current=button.dataset.d;render()}));
+}
+render();initNurseAvatar('programme');
+</script></body></html>
